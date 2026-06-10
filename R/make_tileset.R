@@ -1,8 +1,8 @@
-STATE = "MA"
-COUNTIES = c("Suffolk", "Middlesex", "Norfolk", "Essex", "Plymouth")
-TILESET_ID = "boston"
-MAPBOX_SECRET_TOKEN = ""
-MAPBOX_USERNAME = ""
+STATE = "PA"
+COUNTIES = c("Allegheny")
+TILESET_ID = "wilkinsburg"
+MAPBOX_SECRET_TOKEN = "sk.eyJ1Ijoid2lsa2luc2J1cmdsYW5kYmFuayIsImEiOiJjbXB4MDhwYXYwNDUzMnFvbjN2Z2tienRqIn0.2N542kADv2MQzR0UvNyqgw"
+MAPBOX_USERNAME = "wilkinsburglandbank"
 
 library(tidycensus)
 library(tidyverse)
@@ -12,11 +12,13 @@ library(jsonlite)
 library(mapboxapi)
 
 # Census variables you wish to include in the tileset
-vars = c(pop="P009001", pop_white="P009005", pop_black="P009006",
-         pop_hisp="P009002")
+vars = c(pop = "P1_001N")
 
-d = get_decennial("block", variables=vars, state=STATE, county=COUNTIES,
-                  output="wide", geometry=T)
+d = get_decennial("block", variables=vars, state=STATE, county=COUNTIES, year = 2020,
+                  sumfile = "pl",
+                  output="wide",
+                  geometry=T,
+                  key = Sys.getenv("CENSUS_API_KEY"))
 cat("Census data downloaded.\n")
 
 {
