@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Wilkinsburg Map Demo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <link rel="stylesheet" href="https://api.mapbox.com/mapbox-gl-js/v1.11.1/mapbox-gl.css">
+  <link rel="stylesheet" href="./embedded.css">
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+    }
+
+    #ns__container {
+      width: 100%;
+      height: 650px;
+      border: 1px solid #ccc;
+    }
+
+    #ns__address-box {
+      width: 280px;
+      padding: 8px;
+    }
+
+    #ns__address-go {
+      padding: 8px 12px;
+    }
+  </style>
+</head>
+
+<body>
+  <h2>Enter your address</h2>
+  <p style="display: flex; flex-direction: row; gap: 8px;">
+    <input type="search" id="ns__address-box" autofocus>
+    <button id="ns__address-go">Go</button>
+  </p>
+
+  <div id="ns__msg-search" hidden class="ns__msg"></div>
+
+  <h2>Draw your neighborhood</h2>
+  <p>
+    Use the brush tool to draw your neighborhood, and the eraser to make corrections.
+  </p>
+
+  <div id="ns__container"></div>
+
+  <script src="https://api.mapbox.com/mapbox-gl-js/v1.11.1/mapbox-gl.js"></script>
+  <script src="./embedded.js"></script>
+
+  <script>
+    const MAPBOX_TOKEN = prompt("Enter your Mapbox public token:");
+    const SPECIFICATION = "https://yana-157.github.io/neighborhood-survey/assets/wilkinsburg.json";
+    const ADJACENCY_GRAPH = "https://yana-157.github.io/neighborhood-survey/assets/wilkinsburg_graph.json";
+
+    const map = window.MapDraw("#ns__container", {
+      token: MAPBOX_TOKEN,
+      url: SPECIFICATION,
+      graph: ADJACENCY_GRAPH,
+      errors: function(message) {
+        console.error(message);
+        const box = document.getElementById("ns__msg-search");
+        box.hidden = false;
+        box.textContent = message;
+      },
+      allowProceed: function(allow) {
+        console.log("Allow proceed:", allow);
+      }
+    });
+
+    function addressSearch() {
+      const box = document.getElementById("ns__address-box");
+      const query = box.value.trim();
+      if (query === "") return;
+      map.loadAddress(query, box);
+    }
+
+    document.getElementById("ns__address-go").addEventListener("click", addressSearch);
+    document.getElementById("ns__address-box").addEventListener("keydown", function(e) {
+      if (e.keyCode === 13) {
+        e.preventDefault();
+        addressSearch();
+      }
+    });
+  </script>
+</body>
+</html>
