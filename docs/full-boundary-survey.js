@@ -182,20 +182,8 @@ function createMap() {
       source: sourceId,
       "source-layer": sourceLayer,
       paint: {
-        "fill-color": [
-          "case",
-          ["boolean", ["feature-state", "current"], false], "#1f5fbf",
-          ["boolean", ["feature-state", "locked"], false], "#8b8b8b",
-          ["boolean", ["feature-state", "hover"], false], "#5b8def",
-          "rgba(255, 255, 255, 0)"
-        ],
-        "fill-opacity": [
-          "case",
-          ["boolean", ["feature-state", "current"], false], 0.72,
-          ["boolean", ["feature-state", "locked"], false], 0.50,
-          ["boolean", ["feature-state", "hover"], false], 0.30,
-          0.05
-        ]
+        "fill-color": "#ffffff",
+        "fill-opacity": 0.08
       }
     });
 
@@ -222,11 +210,11 @@ function createMap() {
     map.setMinZoom(12);
 
     wireMapEvents();
-    refreshVisibleFeatureStates();
+    repaintBlocks();
   });
 
-  map.on("moveend", refreshVisibleFeatureStates);
-  map.on("sourcedata", refreshVisibleFeatureStates);
+  map.on("moveend", repaintBlocks);
+  map.on("sourcedata", repaintBlocks);
 }
 
 function expandBounds(bounds, amount) {
@@ -302,11 +290,7 @@ function setHoverFeature(feature, isHover) {
 function applyPaintToFeature(feature) {
   const name = currentNeighborhoodName();
   const geoid = getGeoid(feature);
-  const stateId = getStateId(feature);
-
-  if (!geoid || !stateId) return;
-
-  rememberFeature(feature);
+  if (!geoid) return;
 
   const otherOwner = ownerOfBlock(geoid, name);
   if (otherOwner) {
@@ -322,7 +306,7 @@ function applyPaintToFeature(feature) {
     selectedByNeighborhood[name].delete(geoid);
   }
 
-  updateFeatureStateForGeoid(geoid);
+  repaintBlocks();
   renderStep();
   saveProgress();
 }
@@ -369,7 +353,7 @@ function updateFeatureStateForGeoid(geoid) {
   });
 }
 
-function refreshVisibleFeatureStates() {
+function repaintBlocks() {
   if (!map || !map.isStyleLoaded()) return;
   if (!map.getLayer(fillLayerId)) return;
 
@@ -433,7 +417,7 @@ function wireUiEvents() {
     if (currentIndex > 0) {
       currentIndex--;
       renderStep();
-      refreshVisibleFeatureStates();
+      repaintBlocks();
       saveProgress();
     }
   });
@@ -443,7 +427,7 @@ function wireUiEvents() {
     selectedByNeighborhood[name].clear();
     skippedNeighborhoods[name] = false;
     setStatus(`Cleared ${name}.`);
-    refreshVisibleFeatureStates();
+    repaintBlocks();
     renderStep();
     saveProgress();
   });
@@ -483,7 +467,7 @@ function goNext() {
   if (currentIndex < NEIGHBORHOODS.length - 1) {
     currentIndex++;
     renderStep();
-    refreshVisibleFeatureStates();
+    repaintBlocks();
     saveProgress();
   } else {
     showReview();
@@ -538,7 +522,7 @@ function showReview() {
     edit.addEventListener("click", () => {
       currentIndex = index;
       renderStep();
-      refreshVisibleFeatureStates();
+      repaintBlocks();
       saveProgress();
     });
 
@@ -692,4 +676,33 @@ function escapeHtml(str) {
     };
     return map[ch];
   });
+}
+
+function repaintBlocks() {
+  if (!map || !map.getLayer(fillLayerId)) return;
+
+  const current = currentNeighborhoodName();
+  const currentBlocks = Array.from(selectedByNeighborhood[current]);
+
+  const lockedBlocks = [];
+  for (const name of NEIGHBORHOODS) {
+    if (name === current) continue;
+    for (const geoid of selectedByNeighborhood[name]) {
+      lockedBlocks.push(geoid);
+    }
+  }
+
+  map.setPaintProperty(fillLayerId, "fill-color", [
+    "case",
+    ["in", ["to-string", ["get", "GEOID"]], ["literal", currentBlocks]], "#1f5fbf",
+    ["in", ["to-string", ["get", "GEOID"]], ["literal", lockedBlocks]], "#8b8b8b",
+    "#ffffff"
+  ]);
+
+  map.setPaintProperty(fillLayerId, "fill-opacity", [
+    "case",
+    ["in", ["to-string", ["get", "GEOID"]], ["literal", currentBlocks]], 0.72,
+    ["in", ["to-string", ["get", "GEOID"]], ["literal", lockedBlocks]], 0.50,
+    0.08
+  ]);
 }
