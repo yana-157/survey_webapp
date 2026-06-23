@@ -1,8 +1,11 @@
 var map; 
 
-var MAPBOX_TOKEN = "pk.eyJ1IjoiY21jY2FydGFuIiwiYSI6ImNrZGdkdW9waTA1eGEycmxycnQzZ3o4c3kifQ.v_XViAm-nItfHgx0J3Xg3A";
-var SPECIFICATION = "https://corymccartan.github.io/neighborhood-survey/assets/boston.json";
-var ADJACENCY_GRAPH = "https://corymccartan.github.io/neighborhood-survey/assets/boston_graph.json";
+// Replace this manually in Qualtrics with your public pk token.
+// Do not commit a real Mapbox token to GitHub.
+var MAPBOX_TOKEN = "PASTE_PUBLIC_MAPBOX_TOKEN_HERE";
+
+var SPECIFICATION = "https://yana-157.github.io/neighborhood-survey/assets/wilkinsburg.json";
+var ADJACENCY_GRAPH = "https://yana-157.github.io/neighborhood-survey/assets/wilkinsburg_graph.json";
 
 Qualtrics.SurveyEngine.addOnload(function() {
     this.disableNextButton();
