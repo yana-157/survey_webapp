@@ -9,7 +9,7 @@ var ADJACENCY_GRAPH = "https://yana-157.github.io/neighborhood-survey/assets/wil
 
 Qualtrics.SurveyEngine.addOnload(function() {
     this.disableNextButton();
-
+    mapboxgl.accessToken = MAPBOX_TOKEN;
     map = window.MapDraw("#ns__container", {
         token: MAPBOX_TOKEN,
         url: SPECIFICATION,

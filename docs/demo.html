@@ -51,12 +51,16 @@
   <script src="./embedded.js"></script>
 
   <script>
-    const MAPBOX_TOKEN = prompt("Enter your Mapbox public token:");
-    const SPECIFICATION = "https://yana-157.github.io/neighborhood-survey/assets/wilkinsburg.json";
-    const ADJACENCY_GRAPH = "https://yana-157.github.io/neighborhood-survey/assets/wilkinsburg_graph.json";
+  const tokenInput = prompt("Paste your public Mapbox token:");
+  const MAPBOX_TOKEN = tokenInput ? tokenInput.trim() : "";
 
-    const map = window.MapDraw("#ns__container", {
-      token: MAPBOX_TOKEN,
+  mapboxgl.accessToken = MAPBOX_TOKEN;
+
+  const SPECIFICATION = "https://yana-157.github.io/neighborhood-survey/assets/wilkinsburg.json";
+  const ADJACENCY_GRAPH = "https://yana-157.github.io/neighborhood-survey/assets/wilkinsburg_graph.json";
+
+  const map = window.MapDraw("#ns__container", {
+    token: MAPBOX_TOKEN,
       url: SPECIFICATION,
       graph: ADJACENCY_GRAPH,
       errors: function(message) {
