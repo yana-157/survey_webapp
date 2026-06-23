@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Wilkinsburg Neighborhood Boundary Survey</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <link href="https://api.mapbox.com/mapbox-gl-js/v1.11.1/mapbox-gl.css" rel="stylesheet" />
+  <link rel="stylesheet" href="./full-boundary-survey.css" />
+
+  <script src="https://api.mapbox.com/mapbox-gl-js/v1.11.1/mapbox-gl.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+
+<body>
+  <div id="app">
+    <aside id="panel">
+      <header>
+        <h1>Wilkinsburg Neighborhood Boundary Survey</h1>
+        <p id="intro">
+          You will see Wilkinsburg neighborhood names one at a time. For each one,
+          tap or paint the blocks you think belong to that neighborhood.
+        </p>
+      </header>
+
+      <section id="context-section">
+        <h2>Before you start</h2>
+
+        <label for="relationship">Your relationship to Wilkinsburg</label>
+        <select id="relationship">
+          <option value="">Select one</option>
+          <option>Resident</option>
+          <option>Former resident</option>
+          <option>Work in Wilkinsburg</option>
+          <option>Own property in Wilkinsburg</option>
+          <option>Own a business in Wilkinsburg</option>
+          <option>Visit often</option>
+          <option>Other</option>
+          <option>Prefer not to say</option>
+        </select>
+
+        <label for="anchor-area">Area you know best</label>
+        <input id="anchor-area" placeholder="Street, intersection, landmark, or general area" />
+
+        <label for="years-connected">Years connected to Wilkinsburg</label>
+        <select id="years-connected">
+          <option value="">Select one</option>
+          <option>Less than 1 year</option>
+          <option>1–3 years</option>
+          <option>4–10 years</option>
+          <option>11–20 years</option>
+          <option>20+ years</option>
+          <option>Prefer not to say</option>
+        </select>
+      </section>
+
+      <section id="draw-section">
+        <div id="progress-row">
+          <span id="step-label"></span>
+          <span id="block-count-label"></span>
+        </div>
+
+        <div id="progress-bar">
+          <div id="progress-fill"></div>
+        </div>
+
+        <h2 id="neighborhood-title"></h2>
+
+        <p id="instructions">
+          Tap blocks to add or remove them. Use Paint mode to drag across multiple blocks.
+          Grey blocks have already been assigned to another neighborhood.
+        </p>
+
+        <div id="tool-row">
+          <button id="paint-mode" class="active" type="button">Paint</button>
+          <button id="erase-mode" type="button">Erase</button>
+        </div>
+
+        <div id="action-row">
+          <button id="back-btn" type="button">Back</button>
+          <button id="clear-current-btn" type="button">Clear this neighborhood</button>
+        </div>
+
+        <div id="action-row-2">
+          <button id="skip-btn" type="button">I don’t know this one</button>
+          <button id="save-next-btn" type="button">Save & next</button>
+        </div>
+
+        <p id="status"></p>
+      </section>
+
+      <section id="review-section" hidden>
+        <h2>Review your map</h2>
+        <p>
+          Tap Edit to revise any neighborhood. When you edit one, its blocks become editable again,
+          while the other neighborhoods stay greyed out.
+        </p>
+        <div id="review-list"></div>
+        <button id="finish-btn" type="button">Submit final map</button>
+      </section>
+
+      <section id="final-section" hidden>
+        <h2>Final response</h2>
+        <p id="submit-status"></p>
+        <button id="download-json-btn" type="button">Download JSON backup</button>
+        <textarea id="final-json" readonly></textarea>
+      </section>
+    </aside>
+
+    <main id="map-wrap">
+      <div id="map"></div>
+      <div id="map-legend">
+        <span><i class="legend-current"></i> Current neighborhood</span>
+        <span><i class="legend-locked"></i> Already assigned</span>
+        <span><i class="legend-open"></i> Unassigned</span>
+      </div>
+    </main>
+  </div>
+
+  <script src="./full-boundary-survey.js"></script>
+</body>
+</html>
