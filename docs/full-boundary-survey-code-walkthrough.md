@@ -38,7 +38,7 @@ Do source edits in `html/full-boundary-survey.html`, `src/full-boundary-survey.j
 - Header and reset button.
 - `#context-section` for respondent context.
 - `#neighborhood-setup-section` for choosing and adding neighborhood names.
-- `#draw-section` for drawing the current neighborhood.
+- `#draw-section` for drawing the current neighborhood, including an expandable neighborhood list.
 - `#review-section` for validation and neighborhood revision.
 - `#final-section` for submission status and JSON backup.
 
@@ -105,7 +105,7 @@ The app adds:
 - A block fill layer for selected/unselected colors.
 - A thin block line layer for base block outlines.
 - A thicker selected-neighborhood line layer drawn directly from the same Mapbox block source.
-- A Mapbox navigation control with the compass button labeled as **Rotate**.
+- A standard Mapbox navigation control for zooming and rotation.
 
 The app previously tried to rebuild neighborhood outlines from cached vector-tile geometry. That was removed because tile fragments can create messy visual borders. The current version uses stable Mapbox filters and paint expressions instead.
 
@@ -147,6 +147,8 @@ Then it calls:
 - `renderStep()` to refresh labels.
 - `saveProgress()` to persist the cleared state.
 
+The clear confirmation is temporary. `setTemporaryStatus("Cleared ...", 3000)` shows the message for about three seconds, then removes it unless another status message has replaced it.
+
 `repaintBlocks()` has a special empty-selection path. If no selected blocks remain anywhere, it sets the fill layer back to constant white/unselected styling instead of leaving Mapbox with an invalid or stale expression.
 
 ## Block Colors
@@ -162,22 +164,26 @@ Then it calls:
 
 ## Borders
 
-The app draws borders using Mapbox line layers from the original block source.
+The app draws borders from generated GeoJSON assets:
 
-`lineLayerId` is the thin base block outline layer.
+- `assets/wilkinsburg_borough_boundary.geojson` stores the dissolved outside boundary of Wilkinsburg.
+- `assets/wilkinsburg_boundary_edges.geojson` stores side-aware block boundary edges. Each edge has an `a` block ID and either a neighboring `b` block ID or no `b` value for the outside borough edge.
+- Tiny borough-boundary fragments are ignored at draw time so they do not appear as stray black marks on the map.
+- Very short boundary-edge fragments are also filtered out before drawing selected-neighborhood outlines.
 
-`neighborhoodBorderLayerId` is a thicker overlay for selected blocks. It uses:
+`renderBorders()` uses those assets like this:
 
-- `map.setFilter(...)` to include only selected block GEOIDs.
-- `map.setPaintProperty(...)` to color selected block lines by neighborhood.
+- The borough layer always uses the dissolved Wilkinsburg boundary.
+- A selected neighborhood draws only edges where one side is selected and the other side is not selected.
+- Shared edges between two blocks in the same selected neighborhood are skipped, so the map shows the neighborhood outline instead of every internal block line.
 
 `#border-toggle` controls `showBorders`.
 
-`updateBorderVisibility()` switches the base block line layer and selected-neighborhood line layer between `visible` and `none`.
+`updateBorderVisibility()` switches the borough and selected-neighborhood border layers between `visible` and `none`.
 
 ## Landmark Search
 
-`#map-search` submits to `searchLandmark(event)`.
+`#map-search-toggle` opens and closes the compact landmark search panel. `#map-search` submits to `searchLandmark(event)`.
 
 Search behavior:
 
@@ -185,10 +191,10 @@ Search behavior:
 2. Biases the Mapbox Geocoding request to Wilkinsburg.
 3. Uses the Wilkinsburg bounding box and proximity center.
 4. Places a marker on the first result.
-5. Opens a popup with the returned place name.
+5. Opens a popup with the returned place name. The popup close button is disabled so the X does not overlap the name.
 6. Flies the map to the result.
 
-If no result is found, `#map-search-status` reports that.
+If no result is found, `#map-search-status` reports that. Once a marker exists, `#map-search-clear-btn` appears and removes the marker plus the status text.
 
 ## Connectivity Validation
 
@@ -227,13 +233,14 @@ It:
 - Renders a neighborhood dropdown.
 - Renders one review row per neighborhood.
 - Shows whether each neighborhood is connected.
+- Final submission describes empty, unassigned, or disconnected states and lets the user either correct them or submit anyway.
 
 `reviseSelectedNeighborhood()` reads the dropdown and calls `startRevisionForNeighborhood(index)`.
 
 During revision:
 
-- The panel shows **Revise [neighborhood]**.
-- **Back** becomes **Back to validation**.
+- The panel shows **Revise [neighborhood]** in the expandable neighborhood selector.
+- **Back** names the previous neighborhood while drawing, is hidden on the first neighborhood, and becomes **Back to validation** during revision.
 - **Save & next** becomes **Done revising**.
 - Painting over a block from another neighborhood moves it into the selected neighborhood.
 
@@ -316,6 +323,6 @@ Use `http://localhost:3000/full-boundary-survey.html` for the reliable preview. 
 - Users can validate and revise after drawing.
 - Users can move blocks between neighborhoods during validation revision.
 - Disconnected neighborhoods are explained when the user tries to continue.
-- Block and selected-neighborhood borders can be shown/hidden.
-- Landmark search can zoom to a searched place.
-- The rotate button has a visible label.
+- Wilkinsburg and selected-neighborhood outer borders can be shown/hidden.
+- Compact landmark search can zoom to a searched place and clear its marker.
+- The map uses Mapbox's standard compact navigation controls.

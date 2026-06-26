@@ -10,6 +10,7 @@ export function reload(done) {
 
 export function serve(done) {
     server.init({
+        notify: false,
         server: {
             baseDir: "./docs/",
             serveStaticOptions: {

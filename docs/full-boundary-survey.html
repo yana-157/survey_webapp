@@ -84,14 +84,19 @@
       <section id="draw-section" hidden>
         <div id="progress-row">
           <span id="step-label"></span>
-          <span id="block-count-label"></span>
         </div>
 
         <div id="progress-bar">
           <div id="progress-fill"></div>
         </div>
 
-        <h2 id="neighborhood-title"></h2>
+        <div id="neighborhood-picker">
+          <button id="neighborhood-toggle" type="button" aria-expanded="false" aria-controls="neighborhood-list">
+            <span id="neighborhood-title"></span>
+            <span class="neighborhood-toggle-arrow" aria-hidden="true"></span>
+          </button>
+          <div id="neighborhood-list" hidden></div>
+        </div>
 
         <p id="instructions">
           Drag to paint blocks. Switch to Erase to remove blocks.
@@ -99,7 +104,6 @@
 
         <div id="action-row">
           <button id="back-btn" type="button">Back</button>
-          <button id="clear-current-btn" type="button">Clear this neighborhood</button>
         </div>
 
         <div id="action-row-2">
@@ -132,29 +136,43 @@
     </aside>
 
     <main id="map-wrap" hidden>
-      <button id="map-expand-btn" class="map-drawer-toggle" type="button" aria-expanded="false">
-        <span class="map-toggle-label">Expand map</span>
+      <button id="map-expand-btn" class="map-drawer-toggle" type="button" aria-expanded="false" aria-label="Expand map">
+        <span class="map-toggle-label">Expand</span>
       </button>
+      <button id="map-search-toggle" type="button" aria-expanded="false">Search for Landmark</button>
       <form id="map-search" autocomplete="off">
         <label for="map-search-input">Search landmark</label>
         <div class="map-search-row">
           <input id="map-search-input" type="search" placeholder="Search landmark" />
           <button id="map-search-btn" type="submit">Search</button>
+          <button id="map-search-clear-btn" type="button" hidden>Clear</button>
         </div>
         <p id="map-search-status"></p>
       </form>
       <div id="map-mode-controls" hidden>
         <button id="map-paint-mode" class="active" type="button">Paint</button>
         <button id="map-erase-mode" type="button">Erase</button>
-        <button id="map-clear-current-btn" type="button">Clear this neighborhood</button>
+        <button id="map-clear-current-btn" type="button" aria-label="Clear this neighborhood" title="Clear this neighborhood">Clear</button>
       </div>
       <label id="border-toggle-row">
         <input id="border-toggle" type="checkbox" checked />
-        <span>Show borders</span>
+        <span>Borders</span>
       </label>
       <div id="map"></div>
       <div id="map-legend"></div>
     </main>
+  </div>
+
+  <div id="app-dialog-backdrop" hidden>
+    <div id="app-dialog" role="dialog" aria-modal="true" aria-labelledby="app-dialog-title">
+      <h2 id="app-dialog-title"></h2>
+      <p id="app-dialog-message"></p>
+      <ul id="app-dialog-list"></ul>
+      <div class="app-dialog-actions">
+        <button id="app-dialog-cancel" type="button">Go back</button>
+        <button id="app-dialog-confirm" type="button">Continue anyway</button>
+      </div>
+    </div>
   </div>
 
   <script src="./full-boundary-survey.js"></script>

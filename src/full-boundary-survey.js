@@ -2,7 +2,10 @@
 
 const SPECIFICATION_URL = "./assets/wilkinsburg.json";
 const GRAPH_URL = "./assets/wilkinsburg_graph.json";
+const BOUNDARY_EDGE_URL = "./assets/wilkinsburg_boundary_edges.geojson";
+const BOROUGH_BOUNDARY_URL = "./assets/wilkinsburg_borough_boundary.geojson";
 const PUBLIC_MAPBOX_TOKEN = "pk.eyJ1IjoiY21jY2FydGFuIiwiYSI6ImNrZGdkdW9waTA1eGEycmxycnQzZ3o4c3kifQ.v_XViAm-nItfHgx0J3Xg3A";
+const MIN_BORDER_SEGMENT_LENGTH = 0.00004;
 
 const DEFAULT_NEIGHBORHOODS = [
   "Hamnett",
@@ -16,18 +19,18 @@ const DEFAULT_NEIGHBORHOODS = [
 ];
 
 const NEIGHBORHOOD_COLORS = [
-  "#2457a6",
-  "#c2410c",
-  "#15803d",
-  "#7c3aed",
-  "#be123c",
-  "#0f766e",
-  "#b45309",
-  "#4f46e5",
-  "#64748b",
-  "#a21caf",
-  "#0369a1",
-  "#65a30d"
+  "#1d4ed8",
+  "#f97316",
+  "#16a34a",
+  "#9333ea",
+  "#dc2626",
+  "#0891b2",
+  "#ca8a04",
+  "#db2777",
+  "#334155",
+  "#84cc16",
+  "#7c2d12",
+  "#0d9488"
 ];
 
 const STORAGE_KEY = "wilkinsburg_full_boundary_survey_v2";
@@ -48,13 +51,21 @@ let isPointerDown = false;
 let sourceId = "wlb-blocks";
 let fillLayerId = "wlb-block-fill";
 let lineLayerId = "wlb-block-line";
+let borderSourceId = "wlb-border-source";
+let boroughBorderLayerId = "wlb-borough-border";
 let neighborhoodBorderLayerId = "wlb-neighborhood-border";
 let sourceLayer = "blocks";
 
 let selectedByNeighborhood = {};
+let boundaryEdges = [];
+let boroughBoundaryFeatures = [];
 let searchMarker = null;
+let landmarkSearchOpen = false;
+let neighborhoodListOpen = false;
 let showBorders = true;
 let respondentId = getOrCreateRespondentId();
+let statusClearTimer = null;
+let activeDialogResolve = null;
 
 const el = {
   panel: document.getElementById("panel"),
@@ -76,13 +87,13 @@ const el = {
   finalSection: document.getElementById("final-section"),
 
   stepLabel: document.getElementById("step-label"),
-  blockCountLabel: document.getElementById("block-count-label"),
   progressFill: document.getElementById("progress-fill"),
   neighborhoodTitle: document.getElementById("neighborhood-title"),
+  neighborhoodToggle: document.getElementById("neighborhood-toggle"),
+  neighborhoodList: document.getElementById("neighborhood-list"),
   status: document.getElementById("status"),
 
   backBtn: document.getElementById("back-btn"),
-  clearCurrentBtn: document.getElementById("clear-current-btn"),
   saveNextBtn: document.getElementById("save-next-btn"),
 
   reviewList: document.getElementById("review-list"),
@@ -100,11 +111,19 @@ const el = {
   mapClearCurrentBtn: document.getElementById("map-clear-current-btn"),
   mapExpandBtn: document.getElementById("map-expand-btn"),
   mapLegend: document.getElementById("map-legend"),
+  mapSearchToggle: document.getElementById("map-search-toggle"),
   mapSearchForm: document.getElementById("map-search"),
   mapSearchInput: document.getElementById("map-search-input"),
+  mapSearchClearBtn: document.getElementById("map-search-clear-btn"),
   mapSearchStatus: document.getElementById("map-search-status"),
   borderToggle: document.getElementById("border-toggle"),
-  resetProgressBtn: document.getElementById("reset-progress-btn")
+  resetProgressBtn: document.getElementById("reset-progress-btn"),
+  appDialogBackdrop: document.getElementById("app-dialog-backdrop"),
+  appDialogTitle: document.getElementById("app-dialog-title"),
+  appDialogMessage: document.getElementById("app-dialog-message"),
+  appDialogList: document.getElementById("app-dialog-list"),
+  appDialogCancel: document.getElementById("app-dialog-cancel"),
+  appDialogConfirm: document.getElementById("app-dialog-confirm")
 };
 
 init();
@@ -128,7 +147,7 @@ async function init() {
   mapboxgl.accessToken = token;
 
   try {
-    const [loadedSpec, loadedGraph] = await Promise.all([
+    const [loadedSpec, loadedGraph, loadedEdges, loadedBoroughBoundary] = await Promise.all([
       fetch(SPECIFICATION_URL).then(r => {
         if (!r.ok) throw new Error("Could not load wilkinsburg.json");
         return r.json();
@@ -136,11 +155,21 @@ async function init() {
       fetch(GRAPH_URL).then(r => {
         if (!r.ok) throw new Error("Could not load wilkinsburg_graph.json");
         return r.json();
+      }),
+      fetch(BOUNDARY_EDGE_URL).then(r => {
+        if (!r.ok) throw new Error("Could not load wilkinsburg_boundary_edges.geojson");
+        return r.json();
+      }),
+      fetch(BOROUGH_BOUNDARY_URL).then(r => {
+        if (!r.ok) throw new Error("Could not load wilkinsburg_borough_boundary.geojson");
+        return r.json();
       })
     ]);
 
     spec = normalizeSpec(loadedSpec);
     graph = normalizeGraph(loadedGraph);
+    boundaryEdges = normalizeBoundaryEdges(loadedEdges);
+    boroughBoundaryFeatures = normalizeBoroughBoundary(loadedBoroughBoundary);
     sourceLayer = spec.units.tileset.sourceLayer;
 
     createMap();
@@ -217,6 +246,81 @@ function first(value) {
   return Array.isArray(value) ? value[0] : value;
 }
 
+function normalizeBoundaryEdges(collection) {
+  return (collection.features || [])
+    .filter(feature => feature.geometry && feature.properties && feature.properties.a)
+    .map(feature => ({
+      a: String(feature.properties.a),
+      b: feature.properties.b ? String(feature.properties.b) : null,
+      geometry: feature.geometry,
+      length: geometryLength(feature.geometry)
+    }))
+    .filter(edge => edge.length >= MIN_BORDER_SEGMENT_LENGTH);
+}
+
+function normalizeBoroughBoundary(collection) {
+  return (collection.features || [])
+    .filter(feature => feature.geometry)
+    .map(feature => {
+      const geometry = mainBoroughOutline(feature.geometry);
+      if (!geometry) return null;
+
+      return {
+        type: "Feature",
+        properties: {
+          kind: "borough",
+          name: "Wilkinsburg",
+          color: "#111827"
+        },
+        geometry
+      };
+    })
+    .filter(Boolean);
+}
+
+function mainBoroughOutline(geometry) {
+  if (geometry.type === "LineString") return geometry;
+
+  if (geometry.type !== "MultiLineString") return geometry;
+
+  const longestLine = geometry.coordinates
+    .filter(line => Array.isArray(line) && line.length > 1)
+    .sort((a, b) => lineLength(b) - lineLength(a))[0];
+
+  if (!longestLine) return null;
+
+  return {
+    type: "LineString",
+    coordinates: longestLine
+  };
+}
+
+function lineLength(line) {
+  let length = 0;
+
+  for (let i = 1; i < line.length; i += 1) {
+    const previous = line[i - 1];
+    const current = line[i];
+    length += Math.hypot(current[0] - previous[0], current[1] - previous[1]);
+  }
+
+  return length;
+}
+
+function geometryLength(geometry) {
+  if (!geometry) return 0;
+
+  if (geometry.type === "LineString") {
+    return lineLength(geometry.coordinates);
+  }
+
+  if (geometry.type === "MultiLineString") {
+    return geometry.coordinates.reduce((sum, line) => sum + lineLength(line), 0);
+  }
+
+  return 0;
+}
+
 function createMap() {
   const bounds = spec.units.bounds;
 
@@ -231,7 +335,6 @@ function createMap() {
   });
 
   map.addControl(new mapboxgl.NavigationControl(), "top-left");
-  labelRotateControl();
 
   map.on("load", () => {
     map.addSource(sourceId, spec.units.tileset.source);
@@ -265,21 +368,43 @@ function createMap() {
       }
     });
 
+    map.addSource(borderSourceId, {
+      type: "geojson",
+      data: emptyFeatureCollection()
+    });
+
     map.addLayer({
-      id: neighborhoodBorderLayerId,
+      id: boroughBorderLayerId,
       type: "line",
-      source: sourceId,
-      "source-layer": sourceLayer,
-      filter: ["in", ["to-string", ["get", "GEOID"]], ["literal", []]],
+      source: borderSourceId,
+      filter: ["==", ["get", "kind"], "borough"],
       paint: {
-        "line-color": "#2457a6",
+        "line-color": "#111827",
         "line-opacity": 0.95,
         "line-width": [
           "interpolate",
           ["linear"],
           ["zoom"],
-          10, 1.6,
-          16, 3.8
+          10, 2.3,
+          16, 5
+        ]
+      }
+    });
+
+    map.addLayer({
+      id: neighborhoodBorderLayerId,
+      type: "line",
+      source: borderSourceId,
+      filter: ["==", ["get", "kind"], "neighborhood"],
+      paint: {
+        "line-color": ["get", "color"],
+        "line-opacity": 0.95,
+        "line-width": [
+          "interpolate",
+          ["linear"],
+          ["zoom"],
+          10, 1.9,
+          16, 4.2
         ]
       }
     });
@@ -293,16 +418,6 @@ function createMap() {
     wireMapEvents();
     repaintBlocks();
   });
-}
-
-function labelRotateControl() {
-  window.setTimeout(() => {
-    const compass = document.querySelector(".mapboxgl-ctrl-compass");
-    if (!compass) return;
-
-    compass.setAttribute("aria-label", "Rotate map");
-    compass.setAttribute("title", "Rotate map");
-  }, 0);
 }
 
 function expandBounds(bounds, amount) {
@@ -396,8 +511,6 @@ function applyPaintToFeatures(features) {
   const seen = new Set();
 
   for (const feature of features) {
-    rememberBlockFeature(feature);
-
     const geoid = getGeoid(feature);
     if (!geoid || seen.has(geoid)) continue;
     seen.add(geoid);
@@ -459,6 +572,7 @@ function getGeoid(feature) {
 function repaintBlocks() {
   if (!map || !map.getLayer(fillLayerId)) return;
 
+  const idExpression = blockIdExpression();
   const colorExpression = ["case"];
   const opacityExpression = ["case"];
   let hasSelectedBlocks = false;
@@ -472,11 +586,11 @@ function repaintBlocks() {
     hasSelectedBlocks = true;
 
     colorExpression.push(
-      ["in", ["to-string", ["get", "GEOID"]], ["literal", blocks]],
+      ["in", idExpression, ["literal", blocks]],
       colorForNeighborhood(name)
     );
     opacityExpression.push(
-      ["in", ["to-string", ["get", "GEOID"]], ["literal", blocks]],
+      ["in", idExpression, ["literal", blocks]],
       name === currentNeighborhoodName() ? 0.76 : 0.56
     );
   }
@@ -490,13 +604,13 @@ function repaintBlocks() {
   } else {
     map.setPaintProperty(fillLayerId, "fill-color", [
       "case",
-      ["==", ["to-string", ["get", "GEOID"]], "__no_selected_blocks__"],
+      ["==", idExpression, "__no_selected_blocks__"],
       "#ffffff",
       "#ffffff"
     ]);
     map.setPaintProperty(fillLayerId, "fill-opacity", [
       "case",
-      ["==", ["to-string", ["get", "GEOID"]], "__no_selected_blocks__"],
+      ["==", idExpression, "__no_selected_blocks__"],
       0.08,
       0.08
     ]);
@@ -505,39 +619,60 @@ function repaintBlocks() {
   renderBorders();
 }
 
-function renderBorders() {
-  if (!map || !map.getLayer(neighborhoodBorderLayerId)) return;
+function blockIdExpression() {
+  return [
+    "case",
+    ["has", "GEOID"],
+    ["to-string", ["get", "GEOID"]],
+    ["to-string", ["id"]]
+  ];
+}
 
-  const selectedGeoids = [];
-  const colorExpression = ["case"];
+function renderBorders() {
+  if (!map || !map.getSource(borderSourceId)) return;
+
+  const features = [...boroughBoundaryFeatures];
 
   for (const name of activeNeighborhoods) {
     ensureNeighborhoodState(name);
 
-    for (const geoid of selectedByNeighborhood[name]) {
-      const blockId = String(geoid);
-      selectedGeoids.push(blockId);
-      colorExpression.push(
-        ["==", ["to-string", ["get", "GEOID"]], blockId],
-        colorForNeighborhood(name)
-      );
+    const selected = selectedByNeighborhood[name];
+    if (selected.size === 0) continue;
+
+    for (const edge of boundaryEdges) {
+      const aSelected = selected.has(edge.a);
+      const bSelected = edge.b ? selected.has(edge.b) : false;
+      if (aSelected === bSelected) continue;
+
+      features.push(edgeFeature(edge, {
+        kind: "neighborhood",
+        name,
+        color: colorForNeighborhood(name)
+      }));
     }
   }
 
-  map.setFilter(neighborhoodBorderLayerId, [
-    "in",
-    ["to-string", ["get", "GEOID"]],
-    ["literal", selectedGeoids]
-  ]);
-
-  if (selectedGeoids.length > 0) {
-    colorExpression.push("#2457a6");
-    map.setPaintProperty(neighborhoodBorderLayerId, "line-color", colorExpression);
-  } else {
-    map.setPaintProperty(neighborhoodBorderLayerId, "line-color", "#2457a6");
-  }
+  map.getSource(borderSourceId).setData({
+    type: "FeatureCollection",
+    features
+  });
 
   updateBorderVisibility();
+}
+
+function edgeFeature(edge, properties) {
+  return {
+    type: "Feature",
+    properties,
+    geometry: edge.geometry
+  };
+}
+
+function emptyFeatureCollection() {
+  return {
+    type: "FeatureCollection",
+    features: []
+  };
 }
 
 function updateBorderVisibility() {
@@ -545,7 +680,7 @@ function updateBorderVisibility() {
 
   const visibility = showBorders ? "visible" : "none";
 
-  for (const layerId of [lineLayerId, neighborhoodBorderLayerId]) {
+  for (const layerId of [boroughBorderLayerId, neighborhoodBorderLayerId]) {
     if (map.getLayer(layerId)) {
       map.setLayoutProperty(layerId, "visibility", visibility);
     }
@@ -804,11 +939,15 @@ function wouldLeaveTooFewBlocksForEmptyNeighborhoods(blockToAdd, currentName) {
   return unassignedAfter < emptyOtherNeighborhoods;
 }
 
-function validateRemainingCapacity(currentName) {
+function hasRemainingCapacity(currentName) {
   const unassigned = unassignedBlockIds().length;
   const emptyOthers = emptyActiveNeighborhoodNames(currentName).length;
 
-  if (unassigned < emptyOthers) {
+  return unassigned >= emptyOthers;
+}
+
+function validateRemainingCapacity(currentName) {
+  if (!hasRemainingCapacity(currentName)) {
     setStatus("Leave space for each remaining selected neighborhood.");
     return false;
   }
@@ -922,22 +1061,104 @@ function validateAllBlocksAssigned() {
   return true;
 }
 
-function validateCurrentNeighborhoodBeforeMovingOn() {
-  const name = currentNeighborhoodName();
+function finalInvalidStateDetails() {
+  const details = [];
+  const empty = emptyActiveNeighborhoodNames(null);
+  const unassigned = unassignedBlockIds();
+  const disconnected = disconnectedNeighborhoodDetails();
+
+  if (empty.length > 0) {
+    for (const name of empty) {
+      details.push({
+        type: "empty",
+        name,
+        message: `${name} has no blocks selected.`
+      });
+    }
+  }
+
+  if (unassigned.length > 0) {
+    details.push({
+      type: "unassigned",
+      message: `${unassigned.length} block${unassigned.length === 1 ? " is" : "s are"} still unassigned.`
+    });
+  }
+
+  for (const detail of disconnected) {
+    details.push({
+      type: "disconnected",
+      name: detail.name,
+      message: `${detail.name} has ${detail.groups} separate groups across ${detail.blocks} selected blocks.`
+    });
+  }
+
+  return details;
+}
+
+async function confirmSubmitWithInvalidStates(details) {
+  if (details.length === 0) return true;
+
+  const issueNeighborhoods = new Set(details
+    .map(detail => detail.name)
+    .filter(Boolean));
+  const hasUnassigned = details.some(detail => detail.type === "unassigned");
+  const rows = [];
+
+  if (issueNeighborhoods.size > 0) {
+    rows.push(`${issueNeighborhoods.size} neighborhood${issueNeighborhoods.size === 1 ? " has" : "s have"} an issue.`);
+  }
+
+  if (hasUnassigned) {
+    rows.push("Some blocks are still unassigned.");
+  }
+
+  return showChoiceDialog({
+    title: "Submit anyway?",
+    message: "This map still has issues.",
+    details: rows,
+    confirmLabel: "Submit anyway",
+    cancelLabel: "Go back"
+  });
+}
+
+function currentNeighborhoodIssueDetails(name) {
+  const issues = [];
   const blocks = selectedByNeighborhood[name];
 
   if (blocks.size === 0) {
-    setStatus(`${name} needs at least one block.`);
-    return false;
+    issues.push(`${name} has no blocks selected.`);
   }
 
   if (blocks.size > 1 && !isConnectedBlockSet(blocks)) {
-    showDisconnectedNeighborhoodAlert([disconnectedNeighborhoodDetail(name)]);
-    setStatus(`${name} must be connected before moving on.`);
-    return false;
+    const detail = disconnectedNeighborhoodDetail(name);
+    issues.push(`${name} is split into ${detail.groups} separate groups.`);
   }
 
-  if (!validateRemainingCapacity(name)) {
+  if (!hasRemainingCapacity(name)) {
+    issues.push("There may not be enough unassigned blocks left for every remaining neighborhood.");
+  }
+
+  return issues;
+}
+
+async function confirmContinueWithCurrentIssues(name, issues) {
+  if (issues.length === 0) return true;
+
+  return showChoiceDialog({
+    title: `${name} needs attention`,
+    message: "You can fix this now or continue anyway.",
+    details: issues,
+    confirmLabel: "Continue anyway",
+    cancelLabel: "Keep fixing"
+  });
+}
+
+async function validateCurrentNeighborhoodBeforeMovingOn() {
+  const name = currentNeighborhoodName();
+  const issues = currentNeighborhoodIssueDetails(name);
+
+  if (issues.length > 0 && !(await confirmContinueWithCurrentIssues(name, issues))) {
+    setStatus(`${name} still needs attention.`);
     return false;
   }
 
@@ -960,6 +1181,10 @@ function ownerOfBlock(geoid, exceptNeighborhood = null) {
 }
 
 function wireUiEvents() {
+  el.neighborhoodToggle.addEventListener("click", toggleNeighborhoodList);
+  el.appDialogCancel.addEventListener("click", () => resolveChoiceDialog(false));
+  el.appDialogConfirm.addEventListener("click", () => resolveChoiceDialog(true));
+
   el.mapPaintMode.addEventListener("click", () => {
     setPaintMode("paint");
   });
@@ -983,16 +1208,15 @@ function wireUiEvents() {
     }
   });
 
-  el.clearCurrentBtn.addEventListener("click", clearCurrentNeighborhood);
   el.mapClearCurrentBtn.addEventListener("click", clearCurrentNeighborhood);
 
-  el.saveNextBtn.addEventListener("click", () => {
+  el.saveNextBtn.addEventListener("click", async () => {
     if (isRevisionMode) {
       showReview();
       return;
     }
 
-    if (!validateCurrentNeighborhoodBeforeMovingOn()) return;
+    if (!(await validateCurrentNeighborhoodBeforeMovingOn())) return;
     goNext();
   });
 
@@ -1021,13 +1245,22 @@ function wireUiEvents() {
   });
 
   el.mapSearchForm.addEventListener("submit", searchLandmark);
+  el.mapSearchToggle.addEventListener("click", toggleLandmarkSearch);
+  el.mapSearchClearBtn.addEventListener("click", clearLandmarkSearch);
 
   el.downloadJsonBtn.addEventListener("click", () => {
     downloadJson(buildPayload(), "wilkinsburg-boundary-response.json");
   });
 
-  el.resetProgressBtn.addEventListener("click", () => {
-    const ok = window.confirm("Clear saved progress and restart this survey?");
+  el.resetProgressBtn.addEventListener("click", async () => {
+    const ok = await showChoiceDialog({
+      title: "Reset saved progress?",
+      message: "This clears the saved draft on this device and restarts the survey.",
+      details: ["Your submitted data is not affected."],
+      confirmLabel: "Reset progress",
+      cancelLabel: "Keep progress"
+    });
+
     if (!ok) return;
 
     localStorage.removeItem(STORAGE_KEY);
@@ -1050,6 +1283,36 @@ function wireUiEvents() {
   });
 }
 
+function showChoiceDialog({ title, message, details, confirmLabel, cancelLabel }) {
+  el.appDialogTitle.textContent = title;
+  el.appDialogMessage.textContent = message;
+  el.appDialogConfirm.textContent = confirmLabel;
+  el.appDialogCancel.textContent = cancelLabel;
+  el.appDialogList.innerHTML = "";
+
+  for (const detail of details) {
+    const item = document.createElement("li");
+    item.textContent = detail;
+    el.appDialogList.appendChild(item);
+  }
+
+  el.appDialogBackdrop.hidden = false;
+  el.appDialogConfirm.focus();
+
+  return new Promise(resolve => {
+    activeDialogResolve = resolve;
+  });
+}
+
+function resolveChoiceDialog(value) {
+  if (!activeDialogResolve) return;
+
+  const resolve = activeDialogResolve;
+  activeDialogResolve = null;
+  el.appDialogBackdrop.hidden = true;
+  resolve(value);
+}
+
 function setPaintMode(mode) {
   paintMode = mode;
 
@@ -1069,7 +1332,23 @@ function toggleMapDrawer() {
 function updateMapDrawerButton() {
   const expanded = document.body.classList.contains("map-expanded");
   el.mapExpandBtn.setAttribute("aria-expanded", expanded ? "true" : "false");
-  el.mapExpandBtn.querySelector(".map-toggle-label").textContent = expanded ? "Collapse map" : "Expand map";
+  el.mapExpandBtn.setAttribute("aria-label", expanded ? "Collapse map" : "Expand map");
+  el.mapExpandBtn.querySelector(".map-toggle-label").textContent = expanded ? "Close" : "Expand";
+}
+
+function toggleLandmarkSearch() {
+  setLandmarkSearchOpen(!landmarkSearchOpen);
+}
+
+function setLandmarkSearchOpen(open) {
+  landmarkSearchOpen = open;
+  document.body.classList.toggle("landmark-search-open", open);
+  el.mapSearchToggle.setAttribute("aria-expanded", open ? "true" : "false");
+  el.mapSearchToggle.textContent = open ? "Close" : "Search for Landmark";
+
+  if (open) {
+    window.setTimeout(() => el.mapSearchInput.focus(), 0);
+  }
 }
 
 function resizeMapSoon() {
@@ -1082,11 +1361,22 @@ function clearCurrentNeighborhood() {
   const name = currentNeighborhoodName();
   selectedByNeighborhood[name].clear();
 
-  setStatus(`Cleared ${name}.`);
+  setTemporaryStatus(`Cleared ${name}.`, 3000);
   repaintBlocks();
   renderBorders();
   renderStep();
   saveProgress();
+}
+
+function clearLandmarkSearch() {
+  if (searchMarker) {
+    searchMarker.remove();
+    searchMarker = null;
+  }
+
+  el.mapSearchInput.value = "";
+  el.mapSearchStatus.textContent = "";
+  el.mapSearchClearBtn.hidden = true;
 }
 
 async function searchLandmark(event) {
@@ -1141,12 +1431,13 @@ async function searchLandmark(event) {
 
     searchMarker = new mapboxgl.Marker({ color: "#111827" })
       .setLngLat(lngLat)
-      .setPopup(new mapboxgl.Popup({ offset: 12 }).setText(result.place_name))
+      .setPopup(new mapboxgl.Popup({ closeButton: false, offset: 12 }).setText(result.place_name))
       .addTo(map);
 
     searchMarker.togglePopup();
     map.flyTo({ center: lngLat, zoom: Math.max(map.getZoom(), 16), essential: true });
     el.mapSearchStatus.textContent = result.place_name;
+    el.mapSearchClearBtn.hidden = false;
   } catch (err) {
     console.error(err);
     el.mapSearchStatus.textContent = "Could not search right now.";
@@ -1184,17 +1475,78 @@ function renderStep() {
   el.stepLabel.textContent = isRevisionMode
     ? "Validation edit"
     : `Neighborhood ${currentIndex + 1} of ${activeNeighborhoods.length}`;
-  el.blockCountLabel.textContent = `${paintMode === "paint" ? "Paint" : "Erase"} mode`;
-
-  el.neighborhoodTitle.textContent = `${isRevisionMode ? "Revise" : "Draw"} ${name}`;
+  el.neighborhoodTitle.textContent = isRevisionMode ? `Revise ${name}` : name;
+  renderNeighborhoodList();
   el.progressFill.style.width = isRevisionMode
     ? "100%"
     : `${((currentIndex + 1) / activeNeighborhoods.length) * 100}%`;
 
-  el.backBtn.disabled = !isRevisionMode && currentIndex === 0;
-  el.backBtn.textContent = isRevisionMode ? "Back to validation" : "Back";
+  el.backBtn.disabled = false;
+
+  if (isRevisionMode) {
+    el.backBtn.hidden = false;
+    el.backBtn.textContent = "Back to validation";
+  } else if (currentIndex === 0) {
+    el.backBtn.hidden = true;
+    el.backBtn.textContent = "Back";
+  } else {
+    el.backBtn.hidden = false;
+    el.backBtn.textContent = `Back to ${activeNeighborhoods[currentIndex - 1]}`;
+  }
+
   el.saveNextBtn.textContent = isRevisionMode ? "Done revising" : "Save & next";
   renderMapLegend();
+}
+
+function toggleNeighborhoodList() {
+  setNeighborhoodListOpen(!neighborhoodListOpen);
+}
+
+function setNeighborhoodListOpen(open) {
+  neighborhoodListOpen = open;
+  el.neighborhoodToggle.setAttribute("aria-expanded", open ? "true" : "false");
+  el.neighborhoodList.hidden = !open;
+}
+
+function renderNeighborhoodList() {
+  const rows = activeNeighborhoods.map((name, index) => ({
+    name,
+    index,
+    current: index === currentIndex,
+    completed: !isRevisionMode && index < currentIndex
+  }));
+
+  const orderedRows = [
+    ...rows.filter(row => row.current),
+    ...rows.filter(row => !row.current && !row.completed),
+    ...rows.filter(row => row.completed)
+  ];
+
+  el.neighborhoodList.innerHTML = "";
+
+  for (const row of orderedRows) {
+    const item = document.createElement("div");
+    item.className = "neighborhood-list-item";
+    if (row.current) item.classList.add("current");
+    if (row.completed) item.classList.add("completed");
+
+    const name = document.createElement("span");
+    name.textContent = row.name;
+
+    item.appendChild(name);
+
+    if (row.completed) {
+      const check = document.createElement("span");
+      check.className = "neighborhood-list-check";
+      check.setAttribute("aria-label", "Completed");
+      check.textContent = "✓";
+      item.appendChild(check);
+    }
+
+    el.neighborhoodList.appendChild(item);
+  }
+
+  setNeighborhoodListOpen(neighborhoodListOpen);
 }
 
 function showReview() {
@@ -1271,25 +1623,12 @@ function startRevisionForNeighborhood(index) {
 }
 
 async function submitFinalResponse() {
-  if (!validateEveryActiveNeighborhoodHasBlocks()) {
-    el.reviewSection.hidden = false;
-    el.finalSection.hidden = true;
-    return;
-  }
+  const invalidStates = finalInvalidStateDetails();
 
-  if (!validateAllBlocksAssigned()) {
-    el.reviewSection.hidden = false;
-    el.finalSection.hidden = true;
-    return;
-  }
-
-  const disconnected = disconnectedNeighborhoodDetails();
-
-  if (disconnected.length > 0) {
+  if (invalidStates.length > 0 && !(await confirmSubmitWithInvalidStates(invalidStates))) {
     el.reviewSection.hidden = false;
     el.finalSection.hidden = true;
     el.submitStatus.textContent = "";
-    showDisconnectedNeighborhoodAlert(disconnected);
     return;
   }
 
@@ -1343,6 +1682,7 @@ function buildPayload() {
     active_neighborhoods: activeNeighborhoods,
     neighborhoods: neighborhoods,
     unassigned_blocks: unassignedBlockIds(),
+    invalid_states: finalInvalidStateDetails(),
     metadata: {
       relationship_to_wilkinsburg: el.relationship.value,
       anchor_area: el.anchorArea.value,
@@ -1435,7 +1775,21 @@ function getOrCreateRespondentId() {
 }
 
 function setStatus(message) {
+  if (statusClearTimer) {
+    window.clearTimeout(statusClearTimer);
+    statusClearTimer = null;
+  }
+
   el.status.textContent = message || "";
+}
+
+function setTemporaryStatus(message, duration = 3000) {
+  setStatus(message);
+
+  statusClearTimer = window.setTimeout(() => {
+    el.status.textContent = "";
+    statusClearTimer = null;
+  }, duration);
 }
 
 function scrollPanelToTop() {
