@@ -406,7 +406,13 @@ button:disabled {
   gap: 0.3rem;
 }
 
+#map-neighborhood-picker.neighborhood-list-open {
+  z-index: 40;
+}
+
 #map-neighborhood-toggle {
+  position: relative;
+  z-index: 42;
   display: flex;
   width: 100%;
   min-height: 2.05rem;
@@ -460,6 +466,8 @@ button:disabled {
 }
 
 #map-neighborhood-list {
+  position: relative;
+  z-index: 41;
   display: grid;
   gap: 0.32rem;
   padding: 0.35rem;

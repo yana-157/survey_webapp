@@ -104,6 +104,7 @@ const el = {
   mapPaintMode: document.getElementById("map-paint-mode"),
   mapEraseMode: document.getElementById("map-erase-mode"),
   mapClearCurrentBtn: document.getElementById("map-clear-current-btn"),
+  mapNeighborhoodPicker: document.getElementById("map-neighborhood-picker"),
   mapNeighborhoodSwatch: document.getElementById("map-neighborhood-swatch"),
   mapNeighborhoodTitle: document.getElementById("map-neighborhood-title"),
   mapNeighborhoodToggle: document.getElementById("map-neighborhood-toggle"),
@@ -1443,6 +1444,7 @@ function toggleNeighborhoodList() {
 
 function setNeighborhoodListOpen(open) {
   neighborhoodListOpen = open;
+  el.mapNeighborhoodPicker.classList.toggle("neighborhood-list-open", open);
   el.mapNeighborhoodToggle.setAttribute("aria-expanded", open ? "true" : "false");
   el.mapNeighborhoodList.hidden = !open;
 }
