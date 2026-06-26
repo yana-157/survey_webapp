@@ -18,6 +18,8 @@ const DEFAULT_NEIGHBORHOODS = [
   "Pennwood"
 ];
 
+const MAX_CUSTOM_NEIGHBORHOODS = 10;
+
 const NEIGHBORHOOD_COLORS = [
   "#1d4ed8",
   "#f97316",
@@ -30,7 +32,17 @@ const NEIGHBORHOOD_COLORS = [
   "#334155",
   "#84cc16",
   "#7c2d12",
-  "#0d9488"
+  "#0d9488",
+  "#7e22ce",
+  "#ea580c",
+  "#0f766e",
+  "#be123c",
+  "#2563eb",
+  "#65a30d",
+  "#b45309",
+  "#4f46e5",
+  "#15803d",
+  "#c026d3"
 ];
 
 const STORAGE_KEY = "wilkinsburg_full_boundary_survey_v2";
@@ -667,13 +679,23 @@ function updateBorderVisibility() {
 }
 
 function colorForNeighborhood(name) {
-  const index = activeNeighborhoods.indexOf(name);
-  const fallbackIndex = availableNeighborhoods.indexOf(name);
-  const colorIndex = index >= 0 ? index : fallbackIndex;
+  const setupIndex = availableNeighborhoods.indexOf(name);
+  const activeIndex = activeNeighborhoods.indexOf(name);
+  const colorIndex = setupIndex >= 0 ? setupIndex : activeIndex;
 
   return NEIGHBORHOOD_COLORS[
     Math.max(0, colorIndex) % NEIGHBORHOOD_COLORS.length
   ];
+}
+
+function isDefaultNeighborhood(name) {
+  return DEFAULT_NEIGHBORHOODS.some(defaultName => {
+    return defaultName.toLowerCase() === String(name).toLowerCase();
+  });
+}
+
+function customNeighborhoodCount() {
+  return availableNeighborhoods.filter(name => !isDefaultNeighborhood(name)).length;
 }
 
 function renderMapLegend() {
@@ -777,7 +799,7 @@ function syncActiveNeighborhoodsFromSetup() {
   saveProgress();
 }
 
-function addCustomNeighborhood() {
+async function addCustomNeighborhood() {
   if (hasStarted) {
     el.setupStatus.textContent = "You cannot add neighborhoods after drawing has started.";
     return;
@@ -792,6 +814,16 @@ function addCustomNeighborhood() {
 
   if (alreadyExists) {
     el.setupStatus.textContent = "That neighborhood is already in the list.";
+    return;
+  }
+
+  if (customNeighborhoodCount() >= MAX_CUSTOM_NEIGHBORHOODS) {
+    await showInfoDialog({
+      title: "Neighborhood limit reached",
+      message: `You can add up to ${MAX_CUSTOM_NEIGHBORHOODS} additional neighborhoods.`,
+      details: ["You can still check or uncheck neighborhoods already in the list."],
+      confirmLabel: "OK"
+    });
     return;
   }
 
@@ -1199,12 +1231,14 @@ function wireUiEvents() {
     goNext();
   });
 
-  el.addNeighborhoodBtn.addEventListener("click", addCustomNeighborhood);
+  el.addNeighborhoodBtn.addEventListener("click", () => {
+    void addCustomNeighborhood();
+  });
 
   el.customNeighborhoodName.addEventListener("keydown", e => {
     if (e.key === "Enter") {
       e.preventDefault();
-      addCustomNeighborhood();
+      void addCustomNeighborhood();
     }
   });
 
@@ -1262,11 +1296,22 @@ function wireUiEvents() {
   });
 }
 
-function showChoiceDialog({ title, message, details, confirmLabel, cancelLabel }) {
+function showInfoDialog({ title, message, details, confirmLabel }) {
+  return showChoiceDialog({
+    title,
+    message,
+    details,
+    confirmLabel,
+    cancelLabel: ""
+  });
+}
+
+function showChoiceDialog({ title, message, details = [], confirmLabel, cancelLabel }) {
   el.appDialogTitle.textContent = title;
   el.appDialogMessage.textContent = message;
   el.appDialogConfirm.textContent = confirmLabel;
   el.appDialogCancel.textContent = cancelLabel;
+  el.appDialogCancel.hidden = !cancelLabel;
   el.appDialogList.innerHTML = "";
 
   for (const detail of details) {
