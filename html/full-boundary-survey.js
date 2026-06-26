@@ -212,6 +212,7 @@ async function init() {
 
     spec = normalizeSpec(loadedSpec);
     graph = normalizeGraph(loadedGraph);
+    pruneSelectionsToCurrentBlocks();
     boundaryEdges = normalizeBoundaryEdges(loadedEdges);
     boroughBoundaryFeatures = normalizeBoroughBoundary(loadedBoroughBoundary);
     sourceLayer = spec.units.tileset.sourceLayer;
@@ -945,16 +946,28 @@ function allBlockIds() {
 
 function assignedBlockIds() {
   const assigned = new Set();
+  const all = allBlockIds();
 
   for (const name of activeNeighborhoods) {
     ensureNeighborhoodState(name);
 
     for (const geoid of selectedByNeighborhood[name]) {
-      assigned.add(String(geoid));
+      const id = String(geoid);
+      if (all.has(id)) assigned.add(id);
     }
   }
 
   return assigned;
+}
+
+function pruneSelectionsToCurrentBlocks() {
+  const all = allBlockIds();
+
+  for (const name of Object.keys(selectedByNeighborhood)) {
+    selectedByNeighborhood[name] = new Set(
+      Array.from(selectedByNeighborhood[name]).filter(geoid => all.has(String(geoid)))
+    );
+  }
 }
 
 function unassignedBlockIds() {

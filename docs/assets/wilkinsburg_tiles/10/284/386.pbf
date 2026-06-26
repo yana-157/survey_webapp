@@ -1,60 +1,26 @@
-àíx
-blocks(€ GEOIDNAMEpophousing_units"
-420031306001030"
+€»x
+blocks(€ GEOIDNAMEhousing_unitspop"
 420031306001031"
-420031306001032"
 420031306001033"
 420031306001034"
-420031306001036"
-420031306001037"
-420031306001038"
-420031306001040"
 420031306002005"
 420031306002013"
 420031306002014"
 420031306002015"
-420031308001033"
-420031308001034"
-420031308001035"
 420031308001036"
 420031308001037"
 420031308003040"
 420031308003048"
-420031308003050"
-420031405001000"
-420031405001011"
-420031405001012"
-420031405001014"
-420031412002000"
-420031412002012"
-420031412002013"
-420031412002027"
-420031412002029"
-420031412002030"
-420031412002031"
-420031412002032"
-420031412002033"
-420031412002037"
 420031412002044"
-420031412002045"
-420031412002050"
-420031412002051"
-420031412002052"
-420031412002053"
-420035154013000"
-420035154013001"
 420035161001000"
 420035161001001"
 420035161001006"
 420035161001007"
 420035161001009"
-420035161001010"
 420035161001029"
 420035161001030"
 420035162001000"
 420035162001003"
-420035162001007"
-420035162001009"
 420035162001010"
 420035162001011"
 420035162001012"
@@ -64,16 +30,9 @@
 420035180012002"
 420035180012014"
 420035190002003"
-420035190003010"
-420035190003011"
-420035190003019"
-420035190003020"
 420035190003021"
-420035190003022"
-420035190003023"
 420035190003025"
 420035190003026"
-420035232003008"
 420035604001000"
 420035604001001"
 420035604001002"
@@ -424,7 +383,6 @@
 420035648002034"
 420035648002035"
 420035648002036"N
-LBlock 1000, Block Group 1, Census Tract 1405, Allegheny County, Pennsylvania"N
 LBlock 1000, Block Group 1, Census Tract 5161, Allegheny County, Pennsylvania"N
 LBlock 1000, Block Group 1, Census Tract 5162, Allegheny County, Pennsylvania"N
 LBlock 1000, Block Group 1, Census Tract 5170, Allegheny County, Pennsylvania"N
@@ -470,7 +428,6 @@ LBlock 1006, Block Group 1, Census Tract 5615, Allegheny County, Pennsylvania"N
 LBlock 1006, Block Group 1, Census Tract 5647, Allegheny County, Pennsylvania"N
 LBlock 1006, Block Group 1, Census Tract 5648, Allegheny County, Pennsylvania"N
 LBlock 1007, Block Group 1, Census Tract 5161, Allegheny County, Pennsylvania"N
-LBlock 1007, Block Group 1, Census Tract 5162, Allegheny County, Pennsylvania"N
 LBlock 1007, Block Group 1, Census Tract 5604, Allegheny County, Pennsylvania"N
 LBlock 1007, Block Group 1, Census Tract 5605, Allegheny County, Pennsylvania"N
 LBlock 1007, Block Group 1, Census Tract 5614, Allegheny County, Pennsylvania"N
@@ -484,14 +441,12 @@ LBlock 1008, Block Group 1, Census Tract 5615, Allegheny County, Pennsylvania"N
 LBlock 1008, Block Group 1, Census Tract 5647, Allegheny County, Pennsylvania"N
 LBlock 1008, Block Group 1, Census Tract 5648, Allegheny County, Pennsylvania"N
 LBlock 1009, Block Group 1, Census Tract 5161, Allegheny County, Pennsylvania"N
-LBlock 1009, Block Group 1, Census Tract 5162, Allegheny County, Pennsylvania"N
 LBlock 1009, Block Group 1, Census Tract 5604, Allegheny County, Pennsylvania"N
 LBlock 1009, Block Group 1, Census Tract 5605, Allegheny County, Pennsylvania"N
 LBlock 1009, Block Group 1, Census Tract 5614, Allegheny County, Pennsylvania"N
 LBlock 1009, Block Group 1, Census Tract 5615, Allegheny County, Pennsylvania"N
 LBlock 1009, Block Group 1, Census Tract 5647, Allegheny County, Pennsylvania"N
 LBlock 1009, Block Group 1, Census Tract 5648, Allegheny County, Pennsylvania"N
-LBlock 1010, Block Group 1, Census Tract 5161, Allegheny County, Pennsylvania"N
 LBlock 1010, Block Group 1, Census Tract 5162, Allegheny County, Pennsylvania"N
 LBlock 1010, Block Group 1, Census Tract 5604, Allegheny County, Pennsylvania"N
 LBlock 1010, Block Group 1, Census Tract 5605, Allegheny County, Pennsylvania"N
@@ -499,7 +454,6 @@ LBlock 1010, Block Group 1, Census Tract 5614, Allegheny County, Pennsylvania"N
 LBlock 1010, Block Group 1, Census Tract 5615, Allegheny County, Pennsylvania"N
 LBlock 1010, Block Group 1, Census Tract 5647, Allegheny County, Pennsylvania"N
 LBlock 1010, Block Group 1, Census Tract 5648, Allegheny County, Pennsylvania"N
-LBlock 1011, Block Group 1, Census Tract 1405, Allegheny County, Pennsylvania"N
 LBlock 1011, Block Group 1, Census Tract 5162, Allegheny County, Pennsylvania"N
 LBlock 1011, Block Group 1, Census Tract 5604, Allegheny County, Pennsylvania"N
 LBlock 1011, Block Group 1, Census Tract 5605, Allegheny County, Pennsylvania"N
@@ -507,7 +461,6 @@ LBlock 1011, Block Group 1, Census Tract 5614, Allegheny County, Pennsylvania"N
 LBlock 1011, Block Group 1, Census Tract 5615, Allegheny County, Pennsylvania"N
 LBlock 1011, Block Group 1, Census Tract 5647, Allegheny County, Pennsylvania"N
 LBlock 1011, Block Group 1, Census Tract 5648, Allegheny County, Pennsylvania"N
-LBlock 1012, Block Group 1, Census Tract 1405, Allegheny County, Pennsylvania"N
 LBlock 1012, Block Group 1, Census Tract 5162, Allegheny County, Pennsylvania"N
 LBlock 1012, Block Group 1, Census Tract 5604, Allegheny County, Pennsylvania"N
 LBlock 1012, Block Group 1, Census Tract 5605, Allegheny County, Pennsylvania"N
@@ -520,7 +473,6 @@ LBlock 1013, Block Group 1, Census Tract 5605, Allegheny County, Pennsylvania"N
 LBlock 1013, Block Group 1, Census Tract 5614, Allegheny County, Pennsylvania"N
 LBlock 1013, Block Group 1, Census Tract 5615, Allegheny County, Pennsylvania"N
 LBlock 1013, Block Group 1, Census Tract 5648, Allegheny County, Pennsylvania"N
-LBlock 1014, Block Group 1, Census Tract 1405, Allegheny County, Pennsylvania"N
 LBlock 1014, Block Group 1, Census Tract 5604, Allegheny County, Pennsylvania"N
 LBlock 1014, Block Group 1, Census Tract 5605, Allegheny County, Pennsylvania"N
 LBlock 1014, Block Group 1, Census Tract 5615, Allegheny County, Pennsylvania"N
@@ -558,26 +510,16 @@ LBlock 1027, Block Group 1, Census Tract 5648, Allegheny County, Pennsylvania"N
 LBlock 1028, Block Group 1, Census Tract 5648, Allegheny County, Pennsylvania"N
 LBlock 1029, Block Group 1, Census Tract 5161, Allegheny County, Pennsylvania"N
 LBlock 1029, Block Group 1, Census Tract 5648, Allegheny County, Pennsylvania"N
-LBlock 1030, Block Group 1, Census Tract 1306, Allegheny County, Pennsylvania"N
 LBlock 1030, Block Group 1, Census Tract 5161, Allegheny County, Pennsylvania"N
 LBlock 1030, Block Group 1, Census Tract 5648, Allegheny County, Pennsylvania"N
 LBlock 1031, Block Group 1, Census Tract 1306, Allegheny County, Pennsylvania"N
 LBlock 1031, Block Group 1, Census Tract 5648, Allegheny County, Pennsylvania"N
-LBlock 1032, Block Group 1, Census Tract 1306, Allegheny County, Pennsylvania"N
 LBlock 1032, Block Group 1, Census Tract 5648, Allegheny County, Pennsylvania"N
 LBlock 1033, Block Group 1, Census Tract 1306, Allegheny County, Pennsylvania"N
-LBlock 1033, Block Group 1, Census Tract 1308, Allegheny County, Pennsylvania"N
 LBlock 1033, Block Group 1, Census Tract 5648, Allegheny County, Pennsylvania"N
 LBlock 1034, Block Group 1, Census Tract 1306, Allegheny County, Pennsylvania"N
-LBlock 1034, Block Group 1, Census Tract 1308, Allegheny County, Pennsylvania"N
-LBlock 1035, Block Group 1, Census Tract 1308, Allegheny County, Pennsylvania"N
-LBlock 1036, Block Group 1, Census Tract 1306, Allegheny County, Pennsylvania"N
 LBlock 1036, Block Group 1, Census Tract 1308, Allegheny County, Pennsylvania"N
-LBlock 1037, Block Group 1, Census Tract 1306, Allegheny County, Pennsylvania"N
 LBlock 1037, Block Group 1, Census Tract 1308, Allegheny County, Pennsylvania"N
-LBlock 1038, Block Group 1, Census Tract 1306, Allegheny County, Pennsylvania"N
-LBlock 1040, Block Group 1, Census Tract 1306, Allegheny County, Pennsylvania"N
-LBlock 2000, Block Group 2, Census Tract 1412, Allegheny County, Pennsylvania"N
 LBlock 2000, Block Group 2, Census Tract 5604, Allegheny County, Pennsylvania"N
 LBlock 2000, Block Group 2, Census Tract 5605, Allegheny County, Pennsylvania"N
 LBlock 2000, Block Group 2, Census Tract 5615, Allegheny County, Pennsylvania"N
@@ -640,14 +582,12 @@ LBlock 2011, Block Group 2, Census Tract 5605, Allegheny County, Pennsylvania"N
 LBlock 2011, Block Group 2, Census Tract 5615, Allegheny County, Pennsylvania"N
 LBlock 2011, Block Group 2, Census Tract 5647, Allegheny County, Pennsylvania"N
 LBlock 2011, Block Group 2, Census Tract 5648, Allegheny County, Pennsylvania"N
-LBlock 2012, Block Group 2, Census Tract 1412, Allegheny County, Pennsylvania"N
 LBlock 2012, Block Group 2, Census Tract 5604, Allegheny County, Pennsylvania"N
 LBlock 2012, Block Group 2, Census Tract 5605, Allegheny County, Pennsylvania"N
 LBlock 2012, Block Group 2, Census Tract 5615, Allegheny County, Pennsylvania"N
 LBlock 2012, Block Group 2, Census Tract 5647, Allegheny County, Pennsylvania"N
 LBlock 2012, Block Group 2, Census Tract 5648, Allegheny County, Pennsylvania"N
 LBlock 2013, Block Group 2, Census Tract 1306, Allegheny County, Pennsylvania"N
-LBlock 2013, Block Group 2, Census Tract 1412, Allegheny County, Pennsylvania"N
 LBlock 2013, Block Group 2, Census Tract 5604, Allegheny County, Pennsylvania"N
 LBlock 2013, Block Group 2, Census Tract 5605, Allegheny County, Pennsylvania"N
 LBlock 2013, Block Group 2, Census Tract 5615, Allegheny County, Pennsylvania"N
@@ -691,27 +631,21 @@ LBlock 2025, Block Group 2, Census Tract 5648, Allegheny County, Pennsylvania"N
 LBlock 2026, Block Group 2, Census Tract 5605, Allegheny County, Pennsylvania"N
 LBlock 2026, Block Group 2, Census Tract 5614, Allegheny County, Pennsylvania"N
 LBlock 2026, Block Group 2, Census Tract 5648, Allegheny County, Pennsylvania"N
-LBlock 2027, Block Group 2, Census Tract 1412, Allegheny County, Pennsylvania"N
 LBlock 2027, Block Group 2, Census Tract 5605, Allegheny County, Pennsylvania"N
 LBlock 2027, Block Group 2, Census Tract 5614, Allegheny County, Pennsylvania"N
 LBlock 2027, Block Group 2, Census Tract 5648, Allegheny County, Pennsylvania"N
 LBlock 2028, Block Group 2, Census Tract 5605, Allegheny County, Pennsylvania"N
 LBlock 2028, Block Group 2, Census Tract 5614, Allegheny County, Pennsylvania"N
 LBlock 2028, Block Group 2, Census Tract 5648, Allegheny County, Pennsylvania"N
-LBlock 2029, Block Group 2, Census Tract 1412, Allegheny County, Pennsylvania"N
 LBlock 2029, Block Group 2, Census Tract 5605, Allegheny County, Pennsylvania"N
 LBlock 2029, Block Group 2, Census Tract 5614, Allegheny County, Pennsylvania"N
 LBlock 2029, Block Group 2, Census Tract 5648, Allegheny County, Pennsylvania"N
-LBlock 2030, Block Group 2, Census Tract 1412, Allegheny County, Pennsylvania"N
 LBlock 2030, Block Group 2, Census Tract 5605, Allegheny County, Pennsylvania"N
 LBlock 2030, Block Group 2, Census Tract 5648, Allegheny County, Pennsylvania"N
-LBlock 2031, Block Group 2, Census Tract 1412, Allegheny County, Pennsylvania"N
 LBlock 2031, Block Group 2, Census Tract 5605, Allegheny County, Pennsylvania"N
 LBlock 2031, Block Group 2, Census Tract 5648, Allegheny County, Pennsylvania"N
-LBlock 2032, Block Group 2, Census Tract 1412, Allegheny County, Pennsylvania"N
 LBlock 2032, Block Group 2, Census Tract 5605, Allegheny County, Pennsylvania"N
 LBlock 2032, Block Group 2, Census Tract 5648, Allegheny County, Pennsylvania"N
-LBlock 2033, Block Group 2, Census Tract 1412, Allegheny County, Pennsylvania"N
 LBlock 2033, Block Group 2, Census Tract 5605, Allegheny County, Pennsylvania"N
 LBlock 2033, Block Group 2, Census Tract 5648, Allegheny County, Pennsylvania"N
 LBlock 2034, Block Group 2, Census Tract 5605, Allegheny County, Pennsylvania"N
@@ -720,7 +654,6 @@ LBlock 2035, Block Group 2, Census Tract 5605, Allegheny County, Pennsylvania"N
 LBlock 2035, Block Group 2, Census Tract 5648, Allegheny County, Pennsylvania"N
 LBlock 2036, Block Group 2, Census Tract 5605, Allegheny County, Pennsylvania"N
 LBlock 2036, Block Group 2, Census Tract 5648, Allegheny County, Pennsylvania"N
-LBlock 2037, Block Group 2, Census Tract 1412, Allegheny County, Pennsylvania"N
 LBlock 2037, Block Group 2, Census Tract 5605, Allegheny County, Pennsylvania"N
 LBlock 2038, Block Group 2, Census Tract 5605, Allegheny County, Pennsylvania"N
 LBlock 2039, Block Group 2, Census Tract 5605, Allegheny County, Pennsylvania"N
@@ -728,11 +661,6 @@ LBlock 2040, Block Group 2, Census Tract 5605, Allegheny County, Pennsylvania"N
 LBlock 2041, Block Group 2, Census Tract 5605, Allegheny County, Pennsylvania"N
 LBlock 2042, Block Group 2, Census Tract 5605, Allegheny County, Pennsylvania"N
 LBlock 2044, Block Group 2, Census Tract 1412, Allegheny County, Pennsylvania"N
-LBlock 2045, Block Group 2, Census Tract 1412, Allegheny County, Pennsylvania"N
-LBlock 2050, Block Group 2, Census Tract 1412, Allegheny County, Pennsylvania"N
-LBlock 2051, Block Group 2, Census Tract 1412, Allegheny County, Pennsylvania"N
-LBlock 2052, Block Group 2, Census Tract 1412, Allegheny County, Pennsylvania"N
-LBlock 2053, Block Group 2, Census Tract 1412, Allegheny County, Pennsylvania"N
 LBlock 3000, Block Group 3, Census Tract 5614, Allegheny County, Pennsylvania"N
 LBlock 3000, Block Group 3, Census Tract 5615, Allegheny County, Pennsylvania"N
 LBlock 3000, Block Group 3, Census Tract 5647, Allegheny County, Pennsylvania"N
@@ -757,18 +685,15 @@ LBlock 3006, Block Group 3, Census Tract 5647, Allegheny County, Pennsylvania"N
 LBlock 3007, Block Group 3, Census Tract 5614, Allegheny County, Pennsylvania"N
 LBlock 3007, Block Group 3, Census Tract 5615, Allegheny County, Pennsylvania"N
 LBlock 3007, Block Group 3, Census Tract 5647, Allegheny County, Pennsylvania"N
-LBlock 3008, Block Group 3, Census Tract 5232, Allegheny County, Pennsylvania"N
 LBlock 3008, Block Group 3, Census Tract 5614, Allegheny County, Pennsylvania"N
 LBlock 3008, Block Group 3, Census Tract 5615, Allegheny County, Pennsylvania"N
 LBlock 3008, Block Group 3, Census Tract 5647, Allegheny County, Pennsylvania"N
 LBlock 3009, Block Group 3, Census Tract 5614, Allegheny County, Pennsylvania"N
 LBlock 3009, Block Group 3, Census Tract 5615, Allegheny County, Pennsylvania"N
 LBlock 3009, Block Group 3, Census Tract 5647, Allegheny County, Pennsylvania"N
-LBlock 3010, Block Group 3, Census Tract 5190, Allegheny County, Pennsylvania"N
 LBlock 3010, Block Group 3, Census Tract 5614, Allegheny County, Pennsylvania"N
 LBlock 3010, Block Group 3, Census Tract 5615, Allegheny County, Pennsylvania"N
 LBlock 3010, Block Group 3, Census Tract 5647, Allegheny County, Pennsylvania"N
-LBlock 3011, Block Group 3, Census Tract 5190, Allegheny County, Pennsylvania"N
 LBlock 3011, Block Group 3, Census Tract 5614, Allegheny County, Pennsylvania"N
 LBlock 3011, Block Group 3, Census Tract 5615, Allegheny County, Pennsylvania"N
 LBlock 3011, Block Group 3, Census Tract 5647, Allegheny County, Pennsylvania"N
@@ -787,19 +712,15 @@ LBlock 3017, Block Group 3, Census Tract 5615, Allegheny County, Pennsylvania"N
 LBlock 3017, Block Group 3, Census Tract 5647, Allegheny County, Pennsylvania"N
 LBlock 3018, Block Group 3, Census Tract 5615, Allegheny County, Pennsylvania"N
 LBlock 3018, Block Group 3, Census Tract 5647, Allegheny County, Pennsylvania"N
-LBlock 3019, Block Group 3, Census Tract 5190, Allegheny County, Pennsylvania"N
 LBlock 3019, Block Group 3, Census Tract 5615, Allegheny County, Pennsylvania"N
 LBlock 3019, Block Group 3, Census Tract 5647, Allegheny County, Pennsylvania"N
-LBlock 3020, Block Group 3, Census Tract 5190, Allegheny County, Pennsylvania"N
 LBlock 3020, Block Group 3, Census Tract 5615, Allegheny County, Pennsylvania"N
 LBlock 3020, Block Group 3, Census Tract 5647, Allegheny County, Pennsylvania"N
 LBlock 3021, Block Group 3, Census Tract 5190, Allegheny County, Pennsylvania"N
 LBlock 3021, Block Group 3, Census Tract 5615, Allegheny County, Pennsylvania"N
 LBlock 3021, Block Group 3, Census Tract 5647, Allegheny County, Pennsylvania"N
-LBlock 3022, Block Group 3, Census Tract 5190, Allegheny County, Pennsylvania"N
 LBlock 3022, Block Group 3, Census Tract 5615, Allegheny County, Pennsylvania"N
 LBlock 3022, Block Group 3, Census Tract 5647, Allegheny County, Pennsylvania"N
-LBlock 3023, Block Group 3, Census Tract 5190, Allegheny County, Pennsylvania"N
 LBlock 3023, Block Group 3, Census Tract 5615, Allegheny County, Pennsylvania"N
 LBlock 3023, Block Group 3, Census Tract 5647, Allegheny County, Pennsylvania"N
 LBlock 3024, Block Group 3, Census Tract 5615, Allegheny County, Pennsylvania"N
@@ -826,7 +747,6 @@ LBlock 3040, Block Group 3, Census Tract 5647, Allegheny County, Pennsylvania"N
 LBlock 3041, Block Group 3, Census Tract 5647, Allegheny County, Pennsylvania"N
 LBlock 3042, Block Group 3, Census Tract 5647, Allegheny County, Pennsylvania"N
 LBlock 3048, Block Group 3, Census Tract 1308, Allegheny County, Pennsylvania"N
-LBlock 3050, Block Group 3, Census Tract 1308, Allegheny County, Pennsylvania"N
 LBlock 4000, Block Group 4, Census Tract 5614, Allegheny County, Pennsylvania"N
 LBlock 4001, Block Group 4, Census Tract 5614, Allegheny County, Pennsylvania"N
 LBlock 4002, Block Group 4, Census Tract 5614, Allegheny County, Pennsylvania"N
@@ -845,234 +765,210 @@ LBlock 4014, Block Group 4, Census Tract 5614, Allegheny County, Pennsylvania"Q
 OBlock 1000, Block Group 1, Census Tract 5180.01, Allegheny County, Pennsylvania"Q
 OBlock 1001, Block Group 1, Census Tract 5180.01, Allegheny County, Pennsylvania"Q
 OBlock 2002, Block Group 2, Census Tract 5180.01, Allegheny County, Pennsylvania"Q
-OBlock 2014, Block Group 2, Census Tract 5180.01, Allegheny County, Pennsylvania"Q
-OBlock 3000, Block Group 3, Census Tract 5154.01, Allegheny County, Pennsylvania"Q
-OBlock 3001, Block Group 3, Census Tract 5154.01, Allegheny County, Pennsylvania"  " " " " " " " " " 	" 
-" " " " " " " " " " " " " " " " " " " " " "  " !" "" #" $" %" &" '" (" )" *" +" ," -" ." /" 0" 1" 2" 3" 4" 5" 6" 7" 8" 9" :" ;" <" =" >" ?" @" A" C" D" E" G" H" I" K" M" N" P" S" T" V" W" X" Y" Z" [" \" ]" ^" _" `" a" b" d" h" i" k" l" p" q" u" x" {" }" " ƒ" …" ‡" Œ" " ‘" “" –" ˜" ™" š" ›"  "  " ¡" ¤" §" ­" ¯" ³" ´" ¸" º" ¼" ¿" À" è" ü/ ¨ĞĞ"	€0mb 
-  #% óĞĞ"	â/;: # PÏĞĞ"	ü//2 ' ¹ĞĞ"	‚0qB$  8 Q×ØÑ"'	†0)‚.	 	  5 K²ĞĞ"$	„0az..&4 )'' D OÈĞĞ"3	‚0Y²((* 
-- - µĞĞ"	¬0kZB 	 # D J¬ĞĞ"3	„0e²$    %3--+ ºÕÑ"	æ03R  + ºèß"	†1]R			) ¶ÕÔ"	œ1cJ   , ‹ğéÙ"	°1/R
-    2 ŒõãÜ" 	¬1#j     2 úæİ" 	¦1j  - ¿áÖ"	ø1iZ  	; ‰æûñ")	à1CŠD      
- - ÀİÔ"	†2kZ 
-  #  ®ÖÖ"	’2o2"  	, …Ğ‹ç"	œ2OR
-(  E †Ö¤ÿ"3	Š2I²
-" 
-  	 	 C ”™¦ø"1	¾2-ª   & 	
-   
-( èÜĞÓ"	Ì2[B   	
-" ¸ÛÚ"	à2Ÿ*
- > +  ‘ïÙ"	ô2…""  - æÍÖÒ"	Ü2Y   åÇ×Ñ"	è2W  * éâìá"	Î2GJ 4    	$ ëòåÜ"	è2G2 @  9" ìúÛ×"	ö2G* F 	 ?* í‚ÑÑ"	è2J
-   9 	ÜÂ‘"(	Â3Ÿ‚"$
-' Y !
-&  
- 
-
-AM â¶À¡";	¤4IÒ 
+OBlock 2014, Block Group 2, Census Tract 5180.01, Allegheny County, Pennsylvania"  " " " " " " " " " 	" 
+" " " " " " " " " " " " " " " " " " " " " "  " !" "" #" $" %" &" '" (" )" *" +" ," -" ." /" 0" 1" 2" 3" 5" 6" 7" 8" 9" :" ;" <" =" >" ?" @" A" B" C" D" E" F" G" H" I" J" K" L" M" N" P" S" T" V" X" Y" Z" [" ]" ^" _" `" b" d" h" i" j" k" l" p" q" r" t" u" x" z" {" }" ~" " ƒ" …" †" ‡" " “" ˜" š" ›"  "  " ¡" ¢" ¤" ¬" ­" ®" ¯" °" ²" ²" ³" ´" ´" ¶" ¸" ¼" ¼" ¿" À" Î" Ğ" è" ê" ô" ø	# 
+êşş"	„0k2 3 (¬‚""	€0r 	 ,	B !‚şş"1	„0eª   #%-+1 "ˆşş" 	„0_j.,&(
+ )'%( á±"	º1GB  		, â¶‡—"	°1/R
+    ; à¬¿Ï")	à1AŠB     
+= ß§åı"+	ò1C’* A  €"	À2Y   , Ü–•¸"	œ2MR  A İœÕƒ"/	Š2I¢
+" 
+  	), Ş¡–Œ"	¦2'R 	 	!A ëİÌ„"/	¾2-¢   & 	
+  
+" ¾ª†"	Ü2Y*    ƒƒş"	Ø2[    ½£€„"	Ü2Y   Õ‡"	ö2[   ¼ÿ…"	è2W  * À·š"	Î2GJ 4    	" Á¾‘Ÿ"	Ü2G* :  3* Û‘ˆ“"	¨2QJ  4 ÚŒ‰¢""	¶2Ur
+ 
+  	 $ ÂÅŠ“"	è2G2 @  9  ÃÌ…‰"	ö2G" F	 ?( ÄÓ€€"	è2B
+  & ¿±ş"	¾2W:   	9 »—Åì"'	ö2U‚Z( 
+# 
+ $ º‘’"	¨3+2$' ¢¾ò"	ê3aB
+
+' Y *K ¹Œış"9	¤4IÊ 
 
-)  		# ëİ"	¶42
-	#; Èé¿™")	Â47Š  	( 
-†ĞĞ"	Ş4ŸB:		* Åàçé"	š5CJ 	)
-	 <4 ÉìÇ¢""	ö41r
-  ! @ ÄİÏË".	¨5Ÿš 
+) 		! Ñ‹™"	º4k* ( ¸††"	¶4KB #  ( £­¢Á"	„4B		$ ‹š"	¸4A2 & ›¤Å"	Ì4A:78 	; Ÿ¡ñü")	Â47Š  	# Ëşş"	Ö4m2"	 * œ˜—•"	š5CJ 	)
+	 <4  ¤€ˆ""	ö41r
+  ! @ ›•†".	¨5Ÿš
  
  ;  
-93 ºŸ‘ô"!	†6Ÿj	  	 1 ¾«éè"	Ò5‰b
-*	 , ¿®ìÛ"	œ5ER 
-    ×ÁåÛ"	¶5-"   4 ÖÀùã""	À51r       / ½¨ó"	à5ƒZ 2  )< À±¬•"*	ú5•Š
+!- “é§»"	À5Ÿ	) ’æ£¾"	à5ŸB	 1 ‘ã¢¾"	†6Ÿb	  1 •ï–—"	Ò5‰b
+*	 * –ò‰š"	œ5EJ 
+    ®ñ‰“"	¶5-"   " ¯òˆ¨"	®5!*   2 ­ğ‘§" 	À51j       / ”ì¡½"	à5ƒZ 2  )< —õÄÚ"*	ú5•Š
   	 1
-2 Õ¿ğä" 	æ5Cj!    ! ¹–ÜÖ"	¸6Ÿ" - Â¸èß"	¦6R"  	) Ã¼ÚÙ"	¦6B 
- ( ³ßêã"	Ò6yB !  	* ´çóà"	ò6SJ "&  2 ¸…÷" 	Ú6=j   * 	' @üçÙ"	Š7Ÿ     IõÌ©"	Š8Ÿ"
-%## FŸİÓ"	€7e2 5 Eœö"$	€7Mz  
-8	
-	%) €œñ"	Ø/$J   	 ) ˆĞĞ"	ö/J  
- 	- ÁæÙ"	à/Z     ! ºê×"	Ö/X* ! ³ÕØ"	Î/p* 
- # X‰ŞÑ"	è/H2  - j×¾¬"	ä/`Z   	' ¾àÖ"	Ì/zB   * !Çà×"	Â/œJ	 & {Øşæ"	ø/Ä:      |Şòé"	ú/ì   ( $ØíŞ"	¾/üB 	$ (Üóß"	²/Ô2( &ÚÖÖ"	Æ/œB 
-  5 ”•øç"#	Æ/œr    / ¢¿ÕÖ"	Ü/°Z     5 ’æà"#	Š0”r   5 “’ÙÙ"#	ğ/œr   / ¡»ã×"	è/¬Z    # ¤Åóä"	Â/¶* 
-	+ ¥Èõà"	Ê/ÌJ ' «Óëß"	¾/Ò:	-  ·åŞ"	ğ/ÀR  - Ÿ´âØ"	ü/¼R  ) ©Ñâ×"	€0èB. 2¯çÚ"	ê/Z   	
- 0 0ëøä"	€0‚b
-  1 UõâÖ" 	†04j
-    1 Z‘ıí" 	0Tj 
-    ' b£ğâ"	”0fB 1 [”æé" 	0Fj
-    8 L·ĞĞ"'	à0‚  ' NÂĞĞ"	ê0$B 1 M½ĞĞ" 	ş0.j      ' \—ĞĞ"	Æ04B'- `ŸŠı"	²0dZ"  	/ ]™ÚÒ"	ê0Bb &  2 ¼ñĞĞ" 	ô0Fj   
-. %1 iÒ–ş" 	ˆ0nj   , lâëâ"	˜0R 	   ' hÌ½¡"	¦0|B6	) ( mçùç"	0–B*
-#* nìãé"	0¤J$ 	2 w¾¶™"!	œ0°j 6
-    G% c¥“"	¬0p:
-  5" pö‘î"	Ò0¬* !, oñï"	Ì0¸R"  	+ „÷í"	¸0èJ  qûĞĞ"	ò0º 4 t­›ˆ"#	è0Òr
-    0 ’”õæ"	 1b    . ‘æß"	œ1Z0 ¶óâ"	–1b 	  * œ¯ÕØ"	œ1J
-    ( ºëĞĞ"	€1LB
- 
- ? ÿ±­"-	Ö1š
-  4 ™¦İİ""	Î14r     . ¥ËÜİ"	¼1XZ(' 4 Àÿòà""	’1rr   + Ë›ÓÒ"	š1®J   . Áƒ¹µ"	¬1|Z   ' É•Ûã"	®1š:
-	1 …ÈªŒ"	1Şb *     ) „ÃĞĞ"	1ŞB ) 1 ÃˆĞĞ"	¸1‚b,	5 È’ìŞ"#	Â1¤r 	5 ÄŠÜã"#	ô1Œr
-  	/ ÅŒĞĞ"	ş1 Z / Ø¯íß"	¾1êZ 
-    / Ï¥İÛ"	à1¾Z
-  / Î£Üç"	Ø1ÊZ3 Óªõò"!	Î1âj  /  / °ã×"	ˆ0¸Z / ªÒİ×"	Œ0âZ   / ­Ş×"	–0ÚZ 	 - ò§†"	æ0R  ' •˜ïİ"	ì0´: 
-		/ Œíæã"	ş0˜Z    % –šçÙ"	ğ0¾2  
-		. /ã„à"	–0öZ	 ; zĞ»›"*	î/°Š      	   + ŠãĞĞ"	š1”J
- 	 % Û²ĞĞ"	œ1”2 	3 Ü³øå"!	Æ1j    , 8ôÜÒ"	¢1¶R     . +©ĞĞ"	œ1´Z 6 @ Rİ§Õ"/	0"¢   	 3 İ´ñò"!	Ê1üj ,
-  '   + Ş¶îç"	Ô1œJ(
- %  3 ß·”õ"!	ì1¬j
-    &+ ×®ÿö"	Ğ1ğJ0 	+ 1 ûĞĞ" 	Ò/j 
-  ( 6äÜÛ"	è1ÌB5 °ïëÙ"#	ì1Âr  , xÃ¼Ÿ"	0®R H     2 kİº£"!	æ/j    ? ,±³".	š1¶š 	
-  , 
-. •›ïâ"	¤2Z
-  	, £Æåç"	˜28R* ù¤ôã"	´2DJ
- 	= î‡Œğ"+	Ä2’   0	 % ; ˆá¡")	ò1CŠ  
- C, ôšÚÖ"	ä28R
-
-0 õœØÓ"	ô2@b  , öéÕ"	ş2DR	 / ·âÚà"	ø1‚Z  	 ) Ò©ùã"	2šB - ş­×Ô"	º2€R    # ºåŞ"	°2¨*
- %+ ¡Ó‡÷"	 2ÌJ
-	/ ÿ°ëæ"	À2‚Z
-   ' ‚·âÙ"	¼2:%# œµñß"	´2œ*& 	4 ˜åå""	ğ2zr   / ™ éÚ"	è2”Z 	  % š¢ĞĞ"	â2 2
-	3 ¼øí""	ü0Er
- 
-  		3 ¾öß""	ò0-r
- 
-  1 ŸÆí"	Ğ2Äb&  39 ò–İÜ"'	‚3‚
-    0 „äóè"	Ô3b %& ‚ÓÑ"	¨3F:  . •”àÕ"	ú2bZ. –—×Ò"	–3nZ  . ‰İÕ"	¢3TZ  ; äÁ’ô")	ö2UŠZ( 
-# 
-  , …çòç"	ô3R	% &
-; †ê‚î")	ô3Š 
-1,    &* ”‘Ş×"	Ø3lJ	; ˆğ“ø")	’4<Š
-  @ —šœŠ".	Œ3†š 	  : 		 G Š÷ÿğ"5	¤3tº    5 ïÜÖ"#	ú2Ôr
+2 ¬ï’" 	æ5Cj!    . «î˜"	ğ5;Z   * ªí‰“"	ò5-J   ! Ú„Š"	¸6Ÿ" ) ‡ ›"	ğ6ŸB ' †š‰–"	ø6Ÿ: 
+ @ ˜ø¯Î".	¨6Ÿš	 
+ 
+  - ™û–"	¦6R"  	) šş‡ˆ"	¦6B 
+ * ©ìˆ"	˜6EJ  O ¨ëá‹"=	°6UÚ 
+
+'  	    7 ˆ§š¦"%	È6Ÿz  
+  	 2 ŒÂ™·" 	¾6Uj(  
+
+    1 ‰®”®"	Ò6™b
+   * Š´‘˜"	Ò6yJ  %  	6 ÖËè"$	Ú6=z     E. ‹»¡"	ö6SZ.   		 	' +Àƒ"	ô/B   % .Ô¨"	ğ/.:   / -ÎŠ–"	€02b
+     /ÙÿŒ"	î/J"  / 0İÒß"	€0lb	    0 B£‚ğ"	€0®b     & PŸÃĞ"	„0®:    " R­”¬"	ø/Ä*   '2 Q¦Ìî"!	î/°j (    # S³— "	ú/ì   $ VÈ"	Ì/€2 	 , UÁ´È"	ê/úR      * WÏƒ"	Ô/˜J    
+. y€„ƒ"	Ü/°Z     , TºËâ"	€0úR  	  4 iÒª"#	€0¤r 
+ 0 jÖ‡‡"	ğ/œb   . xı…‘"	è/¬Z    0 oâ¦Ã"	€0¤b      . nà†‘"	ö/¨Z      {„’¡"	Æ/Â"
+	, z‚‰"	Ğ/´R  	  % ‚™"	¾/Ô2	. }ˆ•"	Ö/ÈZ  . ~Š‹"	â/ÄZ , wúŒ“"	ğ/ÀR  . v÷¢"	€0èZ   ( Œ…‰"	ô/îB  	) €Œ¢"	€0èB+ ƒ‘ˆ‘"	Ô/€J' „’…ˆ"	Ş/ú:
+ 	 " ü‡"	Ş/”*
+	' …“†Š"	ê/ô:
+	 , |†£"	Ê/ÌR  5 *¹»"$	€02z  	 F &şş"5	€0-º  (&* 
++: )²ƒÖ")	0"Š
+ 	 3 ,ÇŠ¢""	†04r
+    	1 1á›«" 	0Tj 
+    ' 9ó"	”0fB / 2ä—”"	0Fb
+ 
+  + 8ñª¬"	˜0ZR% %˜şş"	ê0$: 	1 $“şş" 	ş0.j     % 3çşş"	Æ04:'- 5ëˆŠ"	À0@Z(	 / - 7ï«·"	²0dZ"  	+ 6íËÓ"	¼0LR0 !	 / 4é€ˆ"	ê0Bb &  4 “©şş""	ô0Fr   %* A‰ø"	€0J 
+ 1 @˜¬Å" 	ˆ0nj   , C¨™"	˜0R 	   ' ?’Ñï"	¦0|B6	) ( D­•§"	0–B*
+#& E²—‘"	0¤:$ '0 O™úö"	0®b H       2 N”Êé"!	œ0°j 6
+    G$ M€"	0²2(	 0 ZŞ¶Ê"	 0Ôb
+  	% :õ¯Á"	¬0p:
+  5" G¼œ¾"	Ò0¬* !1 ;÷š" 	æ0|j
+ 	  * >¥°"	Ü0”J
+ $ =ˆ"	ş0¢2  * F·º"	Ì0¸J"  		( L‰œ¡"	Æ0ÄB
 
- $  5 ‘‹áã"#	¼3œr  
+. YÚ• "	¼0ŞZ   * XÕ›¥"	¸0èJ  HÁşş"	ò0º , JÌ¬´"	ğ0ÆR    	 4 KƒµÌ"#	è0Òr
+    5 #şş"$	â0z
+,  2 ôöˆ‰" 	’1j  
+   # 	æşş"	¤0]2
+
+, ø…‰"	–1*R    * éØªÇ"	 1J 
+ , èÔ”"	œ1R
+, õù¡"	–1R 	  * óó†ƒ"	œ1J
+    ( òğ‚‹"	´1(B
+    4 ñí‚†""	À1.r  & ‘£şş"	€1L:
+ 0 ÷ÿƒş"	ˆ12b 	 2 ’¦şş" 	ø0Hj  	%$ ”¬şş"	ú0P2
+& , öüŒ†"	¦1@R
+4  şş""	œ1Xr   9 êÛÌß"'	Æ1	‚   	 2 ã»Š‘" 	¬1#j     6 çĞ–¬"$	¼1z 	 , äÀ˜ª"	¦1R? åÅÛà"-	Ö1š
+  2 ğê‹‹" 	Î14j    , æÊ‰‘"	Ø18R & ïç„„"	Ò1D:
+	 2 û‡ÿ€" 	Ä1Lj 
+
+
+'	* ü‰‹Š"	¼1XJ('. ‘—"	¸1dZ(  3 2 îä—š" 	î1Bj		 4 —µ ""	’1rr   , <ùşş"	ø0‚R  " ) •¯şş"	€1†B 6 !3 –²€‚"!	†1Šj  5+ ¢Î€"	š1®J   . ˜¸çí"	¬1|Z   / ¡Ë£¨"	¤1–Z   '  É‘‰"	®1š:
+	" IÆşş"	„1Â* 
+ 5 ­Ş€ÿ"#	1Ær      0 \¹Ø"	1Şb *     ( [‰şş"	1ŞB ) ' ±âşş"	”1Ş: + £Ğş"	¤1²J
+ ' '¥şş"	€0-B
+	) ¬İ—®"	®1ÔB  1 °á¢À"	¦1Şb 
+    3 «Ü’–"!	¶1Øj
+    2 ™»‘œ" 	²1rj4+ 1 š½şş"	¸1‚b,	1 ŸÇŒš"	Â1¤b	5 ›¿‘Š"#	ô1Œr
+  	5 ÅŒ"#	ä1²r
+  	 - Ã“˜"	î1šR
+  	- œÁşş"	ş1 R 3 ¤Ò¤"!	¸1¼j
+ / ¯à›"	¾1êZ 
+    / ¦Ö‰‹"	à1¾Z
+  / ¥Ô•Š"	Ø1ÊZ1 ªÛ £"	Î1âb
+ /  / ·é™Æ"	ô1ÖZ 2 hÍ’™"!	¢0Œj 
+ 	  . påŒ"	0 Z    ? _¨½".	Ö0øš      , gÇ‡–"	¬0šR     * fÂˆ"	¸0˜J 
+  2 uôŒ¤"!	€0Ìj  , qèŒ¡"	”0´R / …‹"	Œ0âZ   ) ¸Ú"	‚0€   		 . tñ…Œ"	–0ÚZ 	  ¤„‰"	¢0ğ . rë¨È"	¦0®Z 	
+. e½ ¤"	¾0ªZ
+  * sî†"	¢0ÔJ
+	 . ^™¥¹"	à0ŠZ
+ 	 , d¸³Ö"	æ0R  & lÜ‹"	ì0´: 
+		. ]““«"	ü0‚Z   	 . c³‘”"	ş0˜Z    " mŞ‡•"	ğ0¾* 
+		* kÙ•¦"	Ø/¤J   . `¤™¨"	–1–Z    0 b®šœ"	š1¬b 
+	 
+ * a©şş"	š1”J
+ 	 % ²ãşş"	œ1”2 	  ÿşş"	œ1´"   Íşş"	¢1¶"  3 ³ä“¦"!	Æ1j    & Æ€Š"	¢1¶:    , ‡Îä"	š1¶R=  ,3 ´å Ÿ"!	Ê1üj ,
+  '   ) µç•œ"	Ô1œB( %  3 ¶è£Â"!	ì1¬j
+    &+ ®ß¤­"	Ğ1ğJ0 	+ $ ¿•›"	Æ1Â2  	- ‡µ‡™"	ì1ÂR	
+ 	 . íá¦"	„2Z	. ìß"	¤2Z
+  	, ş…’"	„2hR
+  4 ùƒŒ""	2Pr   	, ú…•“"	˜28R* Ğô‘¢"	´2DJ
+ 	, Ñö…‘"	ª2\R
+	. Òøşş"	¤2hZ
+ 
+   6 ÅØ½ä"$	Ä2z 0	 % = ÆÜšµ"+	ä2’			
+ 
+/& Çà‡"	ö2:  * Êèƒ†"	î2J 	 
+. Ïò"	Ô2RZ	
+. Ø‚Šƒ"	Ê2jZ
+ 		, Ëê„ˆ"	ä28R
+
+, Ìì†"	ô2@R, Íîƒ—"	ş2DR	 0 Îğ‚ƒ"	ì2\b  - šˆ"	ø1‚R 
+	 , ı‹€‚"	ş1tR
+) ©Ú‘§"	2šB / ¨Ù–"	Š2¦Z	1 Ôûÿ„"	š2‚b 	* Óú€‹"	 2tJ  ' —şş"	”2:	- Õı‚…"	º2€R    # ôŒ“"	°2¨*
+ %- §Ø¬ª"	€2¾R
+' õ–™³"	ª2´:&		+ ø©¥´"	 2ÌJ
+	/ ù°˜”"	”2äZ
+	/ Öÿ”™"	À2‚Z
+   ' Ù„‡"	¼2:%, ×ˆ‰"	Ä2vR
+  		# ó‹Ÿ"	´2œ*& 	0 ïÏ““"	ğ2zb  - ğÑˆ—"	è2”R
+	  % ñÓşş"	â2 2
+	- ÷¢®Ê"	Æ2ÜR4 
+') ò…‰"	Ú2¬B
+  %- öœ›¼"	Ğ2ÄR& 3( Èã€ÿ"	ˆ3B  6 ÉæŠ‹"$	‚3z
+    & åº…"	Œ36:!  . Ûœ–¡"	Ô3Z
+ %2 ã´ˆ" 	†3Hj  
+& ä·ÿ"	¨3F:  . ìÈƒ"	ú2bZ. íÊ€…"	–3nZ  * ç¾ƒ‹"	¢3TJ
+  2 â±†„" 	œ3bj    4 æ¼†”""	º3^r  * Ù–”›"	à3J 1, ÜŸ• "	ô3R	% &
+( Ú™ˆ“"	è3B	 	( ¢ª¤Ç"	ò3B
+
+6 İ¢œ°"$	ô3z 
+1,  	  &* ëÆ…Œ"	Ø3lJ	9 Ş¥œ°"'	„4,‚
+ 2+9 ß¨¦Á"'	’4<‚
+  : îÍ·Í"(	Œ3†‚	  : 			C á®­"1	¤3tª  5 Æß„Š"#	ú2Ôr
+
+ $  1 Çâ’—"	†3âb 
+ #5 èÀ‘"#	¼3œr  
 
   9
- / ±ğâ"	À2yb 	  !
-0 ŞÈĞĞ"	†4db  + ì€ğÖ"	æ3ÀJ
+ * êÄ€…"	ì3tJ 
+) éÂ€ÿ"	à3B 0 µøşş"	†4db  / Èå§¼"	Ş3ÈZ		 	+ ÃÑ„"	æ3ÀJ
  
-= ïŒìŞ"+	ä2’			
- 
-/+ ®å®ƒ"	°2ŒJ4		- _£š"	¼0LZ0 !  > ­àÈ°",	À2”’& 	  
-B ¬ÚÌÃ"0	Ú2¢ 
-  0
-?
-	#. 1 Såïà" 	ú/j	  * 5Ö÷à"	ú1ÜJ
-9>I J ¯ê×Ò"8	Š2üÂ
+5 ÂÊÁæ"#	–4ÀrK8 	
+
+	
+- Ä×¦»"	 4ÈR C0 F †°€…"4	Š2ü²
 "
-  		   / ¦ùûì"	€3öZ # 7 ııïá"%	À3œz$   3 şƒüì"!	È3–j" 
+  	   + …«±İ"	°2ŒJ4		5 „¦ßù"#	À2”r&  	 
+/ ú¶ °"	¼2ôZ(- û½¤"	ä2†R 	 D ƒ óƒ"2	Ú2ª 
+  0
+=	
+#. ! üÄ€ƒ"	ú2"/ ıËš©"	€3öZ # 1 ‚›‘ "	Š3®b 	 '  1 ÅÛ€‡"	À3b   3 şÒ›¨"!	3’j$    ' •‘"	‚3º:(
+  	/7 ÔÃ"%	À3œz$   3 ÕÈšª"!	È3–j" 
  
-  #1 ÿŠİÚ"	ö3¤b
-	  	  M 3ªÁ›"<	®3æÒ,	  	/	1!, :«ĞĞ"	Ü3”R
-WV	0  ½ĞÕ"	ˆ12b 	 L ©Ê‡ó":	´3´Ê
+  #3 Ó¾²Ğ"!	¤4Ôj 
+  	 !D/1 ÖÎˆ‹"	ö3¤b
+	  	  ' ÿ‹şş"	Â3¶:	 	T €¡´"B	´3´ê
 
-  +3	@ * "Ğş"	Ê/¬J
-    -0 ~î˜‡"	ê/úb      , v¸ÓÒ"	0²R
- / ÷öò"	¾0ªZ
-  5 ƒ™‰"#	 0Ôr  	@ ˆØú".	Ö0øš      - Yˆı"	ò/JZ   3 ›§˜ú"!	¦0®j 
-( }æŠ÷"	†0úB   - ^›ÜÚ"	À0@Z(	 / * gÇ‚÷"	Ü0”J
- * u³óî"	Æ0ÄJ
-/ Ù°’ô"	¦1ŞZ    . ¸åéã"	¸1dZ(  3 3 Í¡öâ"!	¸1¼j
- % ‡‡õ"	Ğ/>:
- 	 1 d§ğì" 	æ0|j
- 	  3 ‘‰ëä"!	¢0Œj 
- 	  / ‡ÓŒ÷"	à0ŠZ
- 	 / ¦Êçß"	Ö/ÈZ  / §Ìàİ"	â/ÄZ , Êïñâ"	„4R
- 	/ úîğÜ"	¬4´Z   & åËïî"	Ü4r:     & çÚö"	ê4j:< 	   ÙÃÒÍ"}	5Ú
+    	 	> / €Ìñ"	Ü3”	 
+	+-2
+ #- ˆºşş"	ì3ÚR4 '*	& şş"	Ü3”:
+ şˆ•"	è/ 	" ’¨"	Ş2Ş* 	 , ¡§Ÿ"	„4R
+ 	, ¦¶’¬"	˜4R
+ 		( §¹‡“"	¤4,B
+ 
+	. ¤°¢½"	È4Z	   	2 à«ƒŒ" 	®4@j  	 $  °óŒ"}	5Ú
     $  	  3  	
-  "* ã¿ğã"	â5DJ @
-!
-	 4 á´ùâ""	â5Dr
+  "( ¥³†‚"	Ô4.B  
+, ´÷õû"	ò4,R( 7 ÁÃ¨Ë"%	¨4–z
+ 	  	4 ( ±ôÊÔ"	º4zB 1 Ñ´Š"	¬4´b   @ Ğ¯˜¢".	²4Ğš 		 	  	& ¼¡œ"	Ü4r:     & ¾¯¤¼"	ê4j:< 	  * ³öÙê"	†5 J'" ²õ‘"	Ò5 *  6 ¸Š§"$	â5Dz
 
 
-	 	 ( æÒ¸«"	ˆ5\B
- A€ äÅÄÎ"n	Ô5FÚ 	
+	 	 
+	( ½¨Ùë"	ˆ5\B
+ A€ »›…ô"n	Ô5FÚ 	
 " 	B5$;	 + 	    
  ;B 		l2 
-% éèˆî"	º5¶2"	 4 H¦¯…"#	6‚r
-k\# 6#A
-	( G¤ĞĞ"	´6šB C<72	$l[+ ûóğ"	¦4àJ 
-	 3 “éå"!	š4„j
-   !1 €”÷"	ª4ˆb
+% À¼œµ"	º5¶2"	 , º•‘"	â5DR @ !
+	 + Ò¹»"	¦4àJ 
+	 / Ïª–š"	ª4êZ
+  	) Î¥Šœ"	Š4”B" 	  ) ÍŸˆ–"	„4¤B 	3 Ø×“—"!	š4„j
+   !' ¿µŠŠ"	º4ü:, 	
+1 ×Ó¥Â"	ª4ˆb
    
-) ²ùĞĞ"	ì3ÚB
-"  3T ôÎöå"B	5šêQH!	    
+) ‰¿şş"	ì3ÚB
+"  3V Ë”“¤"D	5šòQH!	    
   
-   2 9 ‡í‚î"'	„4,‚
- 2+% õÔĞĞ"	Œ5 21  
-<' óÉĞĞ"	¨5˜:QH RG! ³şĞĞ"	¬4„"(). –øà"	„2Z	+ ´„ĞĞ"	¬4„J>&,'1  Ì™€"	Æ2Üb4  
- 	2 — ìé" 	î1Bj		 : ëø´“"(	–4À‚7* 	
-
-	3 üø …"!	¤4Ôj 
-  	 !D/- ±ôĞĞ"	ì3ÚR4 '*	7 òÄÑĞ"%	Ô5Œz%@ 	%RG$ ã»ğä"	¨3+2$/ ñ•ù"	Ş3ÈZ		 	& µĞÕ"	Ü2…: , 	  < êğšú"*	¨4–Š
-  	4 " êêñã"	Ü2G* :  34 à®ëÚ""	š66r$ 	 					.	@ Áµ".	¨6Ÿš	 
- 
-  % ¼¥ù"	À5Ÿ2	 	 - »¢‘õ"	à5ŸR	  
-O Ñ»²‰"=	°6UÚ 
-
-'  	    0 ¶÷‰ë"	¬67b 6'5 	! C–ĞĞ"	¨6~* 	9 ßÉ•ö"'	¢6‚ 6-
- D B“£"3	Î7²8 K5' )$  #(
-   07 ±Ñøì"%	È6Ÿz  
-  	 , ·ÿ…î"	Â65R
-( 	 50 µïŠë"	¾6Ub(     . Íùô"	È4Z	   	& Æã–ö"	Ì4A:78 	* ÜÆ·«"	†5 J'/ ?ÑÊ¨"	´6œZ~˜_`!	Ua81, İÇÉÅ"	ò4,R( S =Ì²‘"B	Ø5†êVb
-	%7#			
-*
-	
-/ &?* ‚Şíæ"	à3J  16 ¤ÉÒÑ"$	Ä1Lz 
-
-'2 Â†îã" 	²1rj4+ ; Œşè")	¼1Š 	  2 Ÿ¹ØŞ" 	¦1@j  3 £á‚ò"!	¼2ôj
-9 ¹èĞĞ"'	œ1X‚    	/ ¢Ûæê"	”2äZ
-	) ¹ãÙ"	1[J 
-' À†ë"	ª2´:&		_ <ËÆ "N	ô4²š
-4	!	O$ 647	7
-		(1 Ğ§üş"	€2¾b
- / Ñ¨èà"	Š2¦Z	3 §úí"!	3’j$    3 ¿ûÔÒ"!	†1Šj  5/ à¸—ë"	ô1ÖZ 4 ¢ÃáŞ""	2Pr   	) ›¯ïÛ"	Ú2¬B
-  %4 Šëâà""	¾1Gr     		- í†ø"	 4ÈR C0 8)2 ŒşâÚ" 	†3Hj  
-* ‡Û×Ü"	¦2'J 	 	!, ó˜ØÕ"	î2R 	 
-- ¤éğö"	ä2†R
-  	 ? “—ˆø"-	Æ1	š        4 š©ØÔ""	À1.r  3 Ô«èä"!	¶1Øj
-    1 ‹èîì"	š1¬b 
-	 
- $ yÉüó"	„0®2   + ÌÓĞ"	¤1²J
- , sˆ‡ş"	ğ0ÆR    	 / †Íıå"	ü0‚Z   	 + VıÜÖ"	ø/.R   ( 4¼úá"	Ş2ŞB
-"  5 Ö­ÑÒ"#	1Ær      4 ƒÆôÛ""	¶2Ur
- 
-  	 0 ø¢àà"	Ô2Rb 	
-- ½ÜÕ"	â1aZ
-    @ ùéôê".	²4Ğš 		 	  	( ÚÄ¥™"	º4zB 6 ‰óŞÕ"$	®4@z  	 	 ( Ëòõã"	ò3B
-
- ( Ìöòâ"	„4B		' ªÏãß"	‚3º:(
-  	/+ »öŞ"	Ğ1]R  	  	. ´ÕÜ"	Ê2jZ
- 		, €²ÛÚ"	Ä2vR
-  		1 «Õòã"	Š3®b 	 '  / Æêå"	î1šZ
-  	/ øäìè"	ª4êZ
-  	( „ËåÚ"	¨2QB  	'. û¨ĞĞ"	¤2hZ
- 
-   3 ğ’éä"!	†3âj 
-  #) ¶ßĞĞ"	”2B 3 ı«ÖÑ"!	š2‚j , ú¦ã×"	ª2\R
-	, *Ïõñ"	È/ˆR	'/ š¤óŞ"	”0´Z / ‰Şúë"	–1–Z    , 7ìíç"	Æ1ÂR  	 / ‚Šòç"	¼0ŞZ   , e©ĞĞ"	ø0‚R  " ) Õ¬€é"	®1ÔB  4 »îĞĞ""	ø0Hr    	%+ a¡şü"	˜0ZR. ¦ÍÔÒ"	ş1tZ. §Ïä×"	„2hZ
-  5 ÇáŞ"#	ä1²r
-  	 / Ê˜úõ"	¤1–Z   & %ÙÒ×"	Ä/ª:
-  . 1¬ÙÓ"	Ş/”Z
-  ,  ÄßÖ"	Ä/R   * ÁŞØ"	È/†J  ) ¬ÔãÚ"	Ô/€B, -ÎÛÖ"	¢0îR
- 
-' ®ÖÜØ"	ê/ô:
- ) ¨ÎÛ×"	ô/îB  	* .ÕÙÖ"	®0èJ  	
-- œªßØ"	¢0ÔR	 + ­ÕÚ×"	Ş/úJ  	 - £ÂáÛ"	Ğ/´R  	  ( )ÎåÛ"	º/ğB  	5 D™ûæ"$	ğ7z
- 7/ ' 
-
-	/ ²Ù€æ"	Ò6™Z
-  ) °Êíß"	ğ6ŸB % ¯ÄèÛ"	ş6Ÿ2  , Ïşä"	˜4R
- 		. Ô¾êá"	ğ5;Z   * Ò¼âÚ"	˜6EJ  ( ÎıÔØ"	Ô4.B  
-* “×Ò"	ì3tJ 
-0 ÷ ÕÔ"	ì2\b  ( ğàÙ"	ö2B  $ Çæìİ"	¸4A2 $ â¹İÒ"	„6`2
+   2  ' Ìšşş"	Š5 :
+1  
+<' Êşş"	¨5˜:QH RG! ŠÄşş"	¬4„"()% ŒÏşş"	°4€2&
+	=%+ ‹Éşş"	¬4„J>&
+&" ışş"	ü4¦*- ûĞ÷"	ô4²"	3"- < ÉŠ‡Š"*	Ô5ŒŠ%@ 	%RG  …ˆ‰"	è2[  & ü¾ã"	Ü5Š:$ &?@  ×²Ş"/	Ğ5¢JF6#A	l			9 ¶ùÉî"'	¢6‚ *-
+  0 É³á"	¬67b 6+  )	$ ¹€‹"	„6`2
 
 
- ( Ğ„åÙ"	¤4,B
- 
-	* Ó½åÛ"	ò5-J   ( A€ŞÕ"	Š7B   * üªİÒ"	 2tJ  , ¡ÀÛ×"	–1*R    * ñ“ÑÒ"	ˆ3J  * ƒáåÚ"	è3J	 ) ÷ßîÜ"	Š4”B" 	  2 ‹úÖØ" 	œ3bj    , ;ÊĞĞ"	ö4®R
-
-
-2 	) ’ÑÒ"	à3B ' èàÜÜ"	º4ü:, 	
-2 ²ÛÚ" 	’1j  
-   + TíÓÕ"	ò/R   $ fÂïâ"	ş0¢2  , …ãÛ"	Ø18R & ˜£ÖÖ"	Ò1D:
-	 ) öÙèÚ"	„4¤B 	& …×Ó"	Œ36:!  " ØÂúÚ"	®5!*   ( á°ØÓ"	¶4KB #  4 ‡æØ""	º3^r  ' µ‹ĞĞ"	°4€:&
-=%" çÔáØ"	Ì2[*
-    # ³ÑÑ"	È2{2  / —œãØ"	ö/¨Z    ) ¾øĞĞ"	€1†B 6 !" rĞĞ"	„1Â* 
- / ˜óä"	‚0¤Z     * #×ŞÔ"	Ê/øJ   / ™¡âŞ"	0 Z    ! ¥ñÕÒ"	ú2"( ›¬İÔ"	´1(B
-      ÛÅãÓ"	Ò5 " ' ¨ÅĞĞ"	Â3¶:	 	& 'ÛàÚ"	À/Ğ: ) €şÕÓ"	Ô/˜B   
-- üáÚ"	¸0˜R 
- 	 " öïâ"	Ì/‚* 	 ) Wƒúá"	ì/,J   / ‚èÙ"	¬0šZ
-     3 î‹ÙÒ"!	À3j    ' Ú±ĞĞ"	”1Ş: & 9üĞĞ"	¢1¶:   ( >ÍĞĞ"	ü4¦B
-   		$ ½ôĞĞ"	ú0P2
-&  
+ ( Ğ¹Ü"	Â65BF	 5 ÌªÏ"
+	‚7 - Õşş"	ª5”*	
+	,+  úşş"	ö4®$ «„‡"	®0è2    
+  ”‚Œ"	Ê/ü"  ·„ˆ™"
+	„6`
++ —×ÿ"	Ê5"	>
+ ‡œÉ"	¨1    †›¦"	¬1#   
