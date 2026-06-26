@@ -489,7 +489,6 @@ function applyPaintToFeatures(features) {
   if (!name || !features || features.length === 0) return;
 
   let changed = false;
-  let lockedOwner = null;
   let capacityBlocked = false;
   const seen = new Set();
 
@@ -501,7 +500,6 @@ function applyPaintToFeatures(features) {
     const otherOwner = ownerOfBlock(geoid, name);
     if (otherOwner) {
       if (!isRevisionMode || paintMode !== "paint") {
-        lockedOwner = lockedOwner || otherOwner;
         continue;
       }
 
@@ -524,9 +522,7 @@ function applyPaintToFeatures(features) {
     }
   }
 
-  if (lockedOwner) {
-    setStatus(`Some blocks are already assigned to ${lockedOwner}. Use the validation step to move blocks between neighborhoods.`);
-  } else if (capacityBlocked) {
+  if (capacityBlocked) {
     setStatus("Leave space for each remaining selected neighborhood.");
   } else if (changed) {
     setStatus("");
