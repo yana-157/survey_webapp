@@ -47,6 +47,8 @@ const NEIGHBORHOOD_COLORS = [
 
 const STORAGE_KEY = "wilkinsburg_full_boundary_survey_v2";
 const RESPONDENT_ID_KEY = "wilkinsburg_boundary_respondent_id";
+const RESPONSE_TABLE = "full_boundary_responses";
+const SPREADSHEET_TABLE = "full_boundary_response_spreadsheet";
 
 let availableNeighborhoods = [...DEFAULT_NEIGHBORHOODS];
 let activeNeighborhoods = [...DEFAULT_NEIGHBORHOODS];
@@ -114,6 +116,7 @@ const el = {
   submitStatus: document.getElementById("submit-status"),
   finalJson: document.getElementById("final-json"),
   downloadJsonBtn: document.getElementById("download-json-btn"),
+  downloadCsvBtn: document.getElementById("download-csv-btn"),
   mapWrap: document.getElementById("map-wrap"),
   mapModeControls: document.getElementById("map-mode-controls"),
   mapPaintMode: document.getElementById("map-paint-mode"),
@@ -1265,6 +1268,13 @@ function wireUiEvents() {
     downloadJson(buildPayload(), "wilkinsburg-boundary-response.json");
   });
 
+  el.downloadCsvBtn.addEventListener("click", () => {
+    downloadCsv(
+      buildSpreadsheetCsvRow(buildPayload()),
+      "wilkinsburg-boundary-response-row.csv"
+    );
+  });
+
   el.resetProgressBtn.addEventListener("click", async () => {
     const ok = await showChoiceDialog({
       title: "Reset saved progress?",
@@ -1679,6 +1689,7 @@ async function submitFinalResponse() {
   }
 
   const payload = buildPayload();
+  const spreadsheetRow = buildSpreadsheetRow(payload);
   const json = JSON.stringify(payload, null, 2);
 
   el.reviewSection.hidden = true;
@@ -1691,14 +1702,14 @@ async function submitFinalResponse() {
   const supabaseAnonKey = params.get("supabase_anon_key");
 
   if (!supabaseUrl || !supabaseAnonKey) {
-    el.submitStatus.textContent = "No Supabase connection configured. Download or copy the JSON response.";
+    el.submitStatus.textContent = "No Supabase connection configured. Download or copy the JSON/CSV response.";
     return;
   }
 
   try {
     const client = supabase.createClient(supabaseUrl, supabaseAnonKey);
     const { error } = await client
-      .from("full_boundary_responses")
+      .from(RESPONSE_TABLE)
       .insert({
         respondent_id: respondentId,
         response_json: payload
@@ -1706,11 +1717,21 @@ async function submitFinalResponse() {
 
     if (error) throw error;
 
-    el.submitStatus.textContent = "Response submitted successfully.";
+    const { error: spreadsheetError } = await client
+      .from(SPREADSHEET_TABLE)
+      .insert(spreadsheetRow);
+
+    if (spreadsheetError) {
+      console.error(spreadsheetError);
+      el.submitStatus.textContent = "Response saved, but the spreadsheet row could not be updated. Download the CSV backup.";
+      return;
+    }
+
+    el.submitStatus.textContent = "Response submitted successfully and added to the spreadsheet table.";
     localStorage.removeItem(STORAGE_KEY);
   } catch (err) {
     console.error(err);
-    el.submitStatus.textContent = "Could not submit to Supabase. Download the JSON backup.";
+    el.submitStatus.textContent = "Could not submit to Supabase. Download the JSON/CSV backup.";
   }
 }
 
@@ -1735,6 +1756,65 @@ function buildPayload() {
       years_connected: el.yearsConnected.value
     }
   };
+}
+
+function buildSpreadsheetRow(payload) {
+  const neighborhoodRows = payload.active_neighborhoods.map((name, index) => {
+    const blockIds = payload.neighborhoods[name] || [];
+
+    return {
+      order: index + 1,
+      name,
+      color: colorForNeighborhood(name),
+      block_count: blockIds.length,
+      block_geoids: blockIds
+    };
+  });
+
+  return {
+    respondent_id: payload.respondent_id,
+    submitted_at: payload.created_at,
+    relationship_to_wilkinsburg: payload.metadata.relationship_to_wilkinsburg || "",
+    anchor_area: payload.metadata.anchor_area || "",
+    years_connected: payload.metadata.years_connected || "",
+    active_neighborhoods: payload.active_neighborhoods,
+    neighborhood_count: payload.active_neighborhoods.length,
+    neighborhood_summary: neighborhoodRows
+      .map(row => `${row.order}. ${row.name}: ${row.block_count} block${row.block_count === 1 ? "" : "s"}`)
+      .join("\n"),
+    neighborhood_mappings: payload.neighborhoods,
+    neighborhood_rows: neighborhoodRows,
+    unassigned_block_count: payload.unassigned_blocks.length,
+    unassigned_blocks: payload.unassigned_blocks,
+    invalid_state_count: payload.invalid_states.length,
+    invalid_states: payload.invalid_states,
+    response_json: payload
+  };
+}
+
+function buildSpreadsheetCsvRow(payload) {
+  const row = buildSpreadsheetRow(payload);
+  const columns = [
+    "respondent_id",
+    "submitted_at",
+    "relationship_to_wilkinsburg",
+    "anchor_area",
+    "years_connected",
+    "active_neighborhoods",
+    "neighborhood_count",
+    "neighborhood_summary",
+    "neighborhood_mappings",
+    "neighborhood_rows",
+    "unassigned_block_count",
+    "unassigned_blocks",
+    "invalid_state_count",
+    "invalid_states",
+    "response_json"
+  ];
+
+  const values = columns.map(column => csvEscape(row[column]));
+
+  return `${columns.join(",")}\n${values.join(",")}\n`;
 }
 
 function saveProgress() {
@@ -1856,6 +1936,34 @@ function downloadJson(payload, filename) {
     URL.revokeObjectURL(url);
     a.remove();
   }, 0);
+}
+
+function downloadCsv(csv, filename) {
+  const blob = new Blob([csv], { type: "text/csv" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+
+  window.setTimeout(() => {
+    URL.revokeObjectURL(url);
+    a.remove();
+  }, 0);
+}
+
+function csvEscape(value) {
+  let text;
+
+  if (Array.isArray(value) || (value && typeof value === "object")) {
+    text = JSON.stringify(value);
+  } else {
+    text = String(value === undefined || value === null ? "" : value);
+  }
+
+  return `"${text.replace(/"/g, '""')}"`;
 }
 
 function escapeHtml(str) {

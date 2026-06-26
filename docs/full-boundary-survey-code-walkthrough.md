@@ -270,9 +270,21 @@ During revision:
 - `active_neighborhoods`
 - `neighborhoods`
 - `unassigned_blocks`
+- `invalid_states`
 - `metadata`
 
-`submitFinalResponse()` validates the full response. If Supabase URL/key are provided in the URL hash, it inserts into `full_boundary_responses`. Otherwise it leaves the JSON available for download.
+`buildSpreadsheetRow()` converts that JSON response into one spreadsheet-friendly row. The row is indexed by `respondent_id` and includes:
+
+- Respondent metadata.
+- The selected neighborhood count.
+- A readable neighborhood summary.
+- The full neighborhood-to-block mapping.
+- Unassigned block and invalid-state counts.
+- The full original JSON response.
+
+`submitFinalResponse()` validates the full response. If Supabase URL/key are provided in the URL hash, it inserts the raw JSON into `full_boundary_responses` and a spreadsheet row into `full_boundary_response_spreadsheet`. Otherwise it leaves JSON and CSV backups available for download.
+
+`docs/supabase-response-spreadsheet.sql` contains the Supabase setup SQL for the response tables, indexes, insert-only row-level-security policies, and an export view called `full_boundary_response_export`.
 
 ## Styling And Responsive Layout
 
