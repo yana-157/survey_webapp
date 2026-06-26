@@ -1561,6 +1561,11 @@ function renderNeighborhoodListItems(container, orderedRows) {
       item.appendChild(check);
     }
 
+    const swatch = document.createElement("span");
+    swatch.className = "neighborhood-list-swatch";
+    swatch.style.background = colorForNeighborhood(row.name);
+    item.appendChild(swatch);
+
     const name = document.createElement("span");
     name.className = "neighborhood-list-name";
     name.textContent = row.name;

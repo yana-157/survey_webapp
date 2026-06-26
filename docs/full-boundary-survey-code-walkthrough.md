@@ -47,10 +47,10 @@ Do source edits in `html/full-boundary-survey.html`, `src/full-boundary-survey.j
 - `#map-expand-btn`, the mobile map drawer toggle.
 - `#map-search`, the landmark/address search overlay.
 - `#map-mode-controls`, the map-only Paint/Erase controls.
-- `#map-neighborhood-picker`, the map overlay for the current neighborhood and expandable neighborhood list.
+- `#map-neighborhood-picker`, the bottom map overlay for the current neighborhood and expandable neighborhood list.
 - `#border-toggle-row`, the Show borders checkbox.
 - `#map`, the Mapbox map container.
-- `#map-legend`, the dynamic neighborhood color legend.
+- `#map-legend`, the older color legend, hidden on the expanded mobile map because the bottom neighborhood picker now carries the colors.
 
 ## JavaScript State
 
