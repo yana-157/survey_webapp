@@ -154,6 +154,13 @@
         <button id="map-erase-mode" type="button">Erase</button>
         <button id="map-clear-current-btn" type="button" aria-label="Clear this neighborhood" title="Clear this neighborhood">Clear</button>
       </div>
+      <div id="map-neighborhood-picker">
+        <button id="map-neighborhood-toggle" type="button" aria-expanded="false" aria-controls="map-neighborhood-list">
+          <span id="map-neighborhood-title"></span>
+          <span class="neighborhood-toggle-arrow" aria-hidden="true"></span>
+        </button>
+        <div id="map-neighborhood-list" hidden></div>
+      </div>
       <label id="border-toggle-row">
         <input id="border-toggle" type="checkbox" checked />
         <span>Borders</span>

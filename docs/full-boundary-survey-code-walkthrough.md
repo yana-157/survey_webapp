@@ -38,7 +38,7 @@ Do source edits in `html/full-boundary-survey.html`, `src/full-boundary-survey.j
 - Header and reset button.
 - `#context-section` for respondent context.
 - `#neighborhood-setup-section` for choosing and adding neighborhood names.
-- `#draw-section` for drawing the current neighborhood, including an expandable neighborhood list.
+- `#draw-section` for drawing the current neighborhood, mirrored by an expandable neighborhood list on the map.
 - `#review-section` for validation and neighborhood revision.
 - `#final-section` for submission status and JSON backup.
 
@@ -47,6 +47,7 @@ Do source edits in `html/full-boundary-survey.html`, `src/full-boundary-survey.j
 - `#map-expand-btn`, the mobile map drawer toggle.
 - `#map-search`, the landmark/address search overlay.
 - `#map-mode-controls`, the map-only Paint/Erase controls.
+- `#map-neighborhood-picker`, the map overlay for the current neighborhood and expandable neighborhood list.
 - `#border-toggle-row`, the Show borders checkbox.
 - `#map`, the Mapbox map container.
 - `#map-legend`, the dynamic neighborhood color legend.

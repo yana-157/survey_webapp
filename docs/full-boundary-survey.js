@@ -109,6 +109,9 @@ const el = {
   mapPaintMode: document.getElementById("map-paint-mode"),
   mapEraseMode: document.getElementById("map-erase-mode"),
   mapClearCurrentBtn: document.getElementById("map-clear-current-btn"),
+  mapNeighborhoodTitle: document.getElementById("map-neighborhood-title"),
+  mapNeighborhoodToggle: document.getElementById("map-neighborhood-toggle"),
+  mapNeighborhoodList: document.getElementById("map-neighborhood-list"),
   mapExpandBtn: document.getElementById("map-expand-btn"),
   mapLegend: document.getElementById("map-legend"),
   mapSearchToggle: document.getElementById("map-search-toggle"),
@@ -1182,6 +1185,7 @@ function ownerOfBlock(geoid, exceptNeighborhood = null) {
 
 function wireUiEvents() {
   el.neighborhoodToggle.addEventListener("click", toggleNeighborhoodList);
+  el.mapNeighborhoodToggle.addEventListener("click", toggleNeighborhoodList);
   el.appDialogCancel.addEventListener("click", () => resolveChoiceDialog(false));
   el.appDialogConfirm.addEventListener("click", () => resolveChoiceDialog(true));
 
@@ -1476,6 +1480,7 @@ function renderStep() {
     ? "Validation edit"
     : `Neighborhood ${currentIndex + 1} of ${activeNeighborhoods.length}`;
   el.neighborhoodTitle.textContent = isRevisionMode ? `Revise ${name}` : name;
+  el.mapNeighborhoodTitle.textContent = isRevisionMode ? `Revise ${name}` : name;
   renderNeighborhoodList();
   el.progressFill.style.width = isRevisionMode
     ? "100%"
@@ -1506,6 +1511,8 @@ function setNeighborhoodListOpen(open) {
   neighborhoodListOpen = open;
   el.neighborhoodToggle.setAttribute("aria-expanded", open ? "true" : "false");
   el.neighborhoodList.hidden = !open;
+  el.mapNeighborhoodToggle.setAttribute("aria-expanded", open ? "true" : "false");
+  el.mapNeighborhoodList.hidden = !open;
 }
 
 function renderNeighborhoodList() {
@@ -1522,18 +1529,29 @@ function renderNeighborhoodList() {
     ...rows.filter(row => row.completed)
   ];
 
-  el.neighborhoodList.innerHTML = "";
+  renderNeighborhoodListItems(el.neighborhoodList, orderedRows);
+  renderNeighborhoodListItems(el.mapNeighborhoodList, orderedRows);
 
+  setNeighborhoodListOpen(neighborhoodListOpen);
+}
+
+function renderNeighborhoodListItems(container, orderedRows) {
+  container.innerHTML = "";
+
+  let completedDividerAdded = false;
   for (const row of orderedRows) {
+    if (row.completed && !completedDividerAdded) {
+      const divider = document.createElement("div");
+      divider.className = "neighborhood-list-divider";
+      divider.textContent = "Completed";
+      container.appendChild(divider);
+      completedDividerAdded = true;
+    }
+
     const item = document.createElement("div");
     item.className = "neighborhood-list-item";
     if (row.current) item.classList.add("current");
     if (row.completed) item.classList.add("completed");
-
-    const name = document.createElement("span");
-    name.textContent = row.name;
-
-    item.appendChild(name);
 
     if (row.completed) {
       const check = document.createElement("span");
@@ -1543,10 +1561,14 @@ function renderNeighborhoodList() {
       item.appendChild(check);
     }
 
-    el.neighborhoodList.appendChild(item);
-  }
+    const name = document.createElement("span");
+    name.className = "neighborhood-list-name";
+    name.textContent = row.name;
 
-  setNeighborhoodListOpen(neighborhoodListOpen);
+    item.appendChild(name);
+
+    container.appendChild(item);
+  }
 }
 
 function showReview() {
