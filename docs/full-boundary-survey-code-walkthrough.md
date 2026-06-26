@@ -167,20 +167,22 @@ The clear confirmation is temporary. `setTemporaryStatus("Cleared ...", 3000)` s
 
 ## Borders
 
-The app draws selected-neighborhood outlines from the generated boundary-edge GeoJSON asset:
+The app draws borders from generated GeoJSON assets:
 
 - `assets/wilkinsburg_boundary_edges.geojson` stores side-aware block boundary edges. Each edge has an `a` block ID and either a neighboring `b` block ID or no `b` value for the outside borough edge.
+- `assets/wilkinsburg_traced_boundary.geojson` stores an external outline traced from the dissolved max-zoom block polygons decoded from `R/data/wilkinsburg.mbtiles`.
 - Very short boundary-edge fragments are also filtered out before drawing selected-neighborhood outlines.
-- The app does not draw the external Wilkinsburg borough outline because the dissolved boundary was visually inaccurate in the survey map.
+- The external border uses the traced block coverage instead of the older dissolved borough-boundary file, which left inaccurate fragments.
 
 `renderBorders()` uses those assets like this:
 
+- The external borough border is drawn from `wilkinsburg_traced_boundary.geojson`.
 - A selected neighborhood draws only edges where one side is selected and the other side is not selected.
 - Shared edges between two blocks in the same selected neighborhood are skipped, so the map shows the neighborhood outline instead of every internal block line.
 
 `#border-toggle` controls `showBorders`.
 
-`updateBorderVisibility()` switches the selected-neighborhood border layer between `visible` and `none`.
+`updateBorderVisibility()` switches the external and selected-neighborhood border layers between `visible` and `none`.
 
 ## Landmark Search
 
@@ -325,6 +327,6 @@ Use `http://localhost:3000/full-boundary-survey.html` for the reliable preview. 
 - Users can validate and revise after drawing.
 - Users can move blocks between neighborhoods during validation revision.
 - Disconnected neighborhoods are explained when the user tries to continue.
-- Selected-neighborhood outer borders can be shown/hidden.
+- The traced Wilkinsburg border and selected-neighborhood outer borders can be shown/hidden.
 - Compact landmark search can zoom to a searched place and clear its marker.
 - The map uses Mapbox's standard compact navigation controls.

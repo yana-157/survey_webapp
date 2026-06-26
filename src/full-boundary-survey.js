@@ -3,6 +3,7 @@
 const SPECIFICATION_URL = "./assets/wilkinsburg.json";
 const GRAPH_URL = "./assets/wilkinsburg_graph.json";
 const BOUNDARY_EDGE_URL = "./assets/wilkinsburg_boundary_edges.geojson";
+const TRACED_BOUNDARY_URL = "./assets/wilkinsburg_traced_boundary.geojson";
 const PUBLIC_MAPBOX_TOKEN = "pk.eyJ1IjoiY21jY2FydGFuIiwiYSI6ImNrZGdkdW9waTA1eGEycmxycnQzZ3o4c3kifQ.v_XViAm-nItfHgx0J3Xg3A";
 const MIN_BORDER_SEGMENT_LENGTH = 0.00004;
 
@@ -51,11 +52,13 @@ let sourceId = "wlb-blocks";
 let fillLayerId = "wlb-block-fill";
 let lineLayerId = "wlb-block-line";
 let borderSourceId = "wlb-border-source";
+let boroughBorderLayerId = "wlb-borough-border";
 let neighborhoodBorderLayerId = "wlb-neighborhood-border";
 let sourceLayer = "blocks";
 
 let selectedByNeighborhood = {};
 let boundaryEdges = [];
+let boroughBoundaryFeatures = [];
 let searchMarker = null;
 let landmarkSearchOpen = false;
 let neighborhoodListOpen = false;
@@ -147,7 +150,7 @@ async function init() {
   mapboxgl.accessToken = token;
 
   try {
-    const [loadedSpec, loadedGraph, loadedEdges] = await Promise.all([
+    const [loadedSpec, loadedGraph, loadedEdges, loadedTracedBoundary] = await Promise.all([
       fetch(SPECIFICATION_URL).then(r => {
         if (!r.ok) throw new Error("Could not load wilkinsburg.json");
         return r.json();
@@ -159,12 +162,17 @@ async function init() {
       fetch(BOUNDARY_EDGE_URL).then(r => {
         if (!r.ok) throw new Error("Could not load wilkinsburg_boundary_edges.geojson");
         return r.json();
+      }),
+      fetch(TRACED_BOUNDARY_URL).then(r => {
+        if (!r.ok) throw new Error("Could not load wilkinsburg_traced_boundary.geojson");
+        return r.json();
       })
     ]);
 
     spec = normalizeSpec(loadedSpec);
     graph = normalizeGraph(loadedGraph);
     boundaryEdges = normalizeBoundaryEdges(loadedEdges);
+    boroughBoundaryFeatures = normalizeTracedBoundary(loadedTracedBoundary);
     sourceLayer = spec.units.tileset.sourceLayer;
 
     createMap();
@@ -253,6 +261,19 @@ function normalizeBoundaryEdges(collection) {
     .filter(edge => edge.length >= MIN_BORDER_SEGMENT_LENGTH);
 }
 
+function normalizeTracedBoundary(collection) {
+  return (collection.features || [])
+    .filter(feature => feature.geometry)
+    .map(feature => ({
+      type: "Feature",
+      properties: {
+        kind: "borough",
+        name: "Wilkinsburg"
+      },
+      geometry: feature.geometry
+    }));
+}
+
 function lineLength(line) {
   let length = 0;
 
@@ -329,6 +350,28 @@ function createMap() {
     map.addSource(borderSourceId, {
       type: "geojson",
       data: emptyFeatureCollection()
+    });
+
+    map.addLayer({
+      id: boroughBorderLayerId,
+      type: "line",
+      source: borderSourceId,
+      filter: ["==", ["get", "kind"], "borough"],
+      paint: {
+        "line-color": "#0f172a",
+        "line-opacity": 0.72,
+        "line-width": [
+          "interpolate",
+          ["linear"],
+          ["zoom"],
+          10, 1.1,
+          16, 2.9
+        ]
+      },
+      layout: {
+        "line-cap": "round",
+        "line-join": "round"
+      }
     });
 
     map.addLayer({
@@ -571,7 +614,7 @@ function blockIdExpression() {
 function renderBorders() {
   if (!map || !map.getSource(borderSourceId)) return;
 
-  const features = [];
+  const features = [...boroughBoundaryFeatures];
 
   for (const name of activeNeighborhoods) {
     ensureNeighborhoodState(name);
@@ -620,8 +663,10 @@ function updateBorderVisibility() {
 
   const visibility = showBorders ? "visible" : "none";
 
-  if (map.getLayer(neighborhoodBorderLayerId)) {
-    map.setLayoutProperty(neighborhoodBorderLayerId, "visibility", visibility);
+  for (const layerId of [boroughBorderLayerId, neighborhoodBorderLayerId]) {
+    if (map.getLayer(layerId)) {
+      map.setLayoutProperty(layerId, "visibility", visibility);
+    }
   }
 }
 
