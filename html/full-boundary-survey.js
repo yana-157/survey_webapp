@@ -48,13 +48,10 @@ let isPointerDown = false;
 let sourceId = "wlb-blocks";
 let fillLayerId = "wlb-block-fill";
 let lineLayerId = "wlb-block-line";
-let borderSourceId = "wlb-border-source";
-let boroughBorderLayerId = "wlb-borough-border";
 let neighborhoodBorderLayerId = "wlb-neighborhood-border";
 let sourceLayer = "blocks";
 
 let selectedByNeighborhood = {};
-let blockFeaturesById = new Map();
 let searchMarker = null;
 let showBorders = true;
 let respondentId = getOrCreateRespondentId();
@@ -100,6 +97,7 @@ const el = {
   mapModeControls: document.getElementById("map-mode-controls"),
   mapPaintMode: document.getElementById("map-paint-mode"),
   mapEraseMode: document.getElementById("map-erase-mode"),
+  mapClearCurrentBtn: document.getElementById("map-clear-current-btn"),
   mapExpandBtn: document.getElementById("map-expand-btn"),
   mapLegend: document.getElementById("map-legend"),
   mapSearchForm: document.getElementById("map-search"),
@@ -255,37 +253,14 @@ function createMap() {
       source: sourceId,
       "source-layer": sourceLayer,
       paint: {
-        "line-color": "#2f3a45",
-        "line-opacity": 0.28,
+        "line-color": "#475569",
+        "line-opacity": 0.22,
         "line-width": [
           "interpolate",
           ["linear"],
           ["zoom"],
-          10, 0.4,
-          16, 1.4
-        ]
-      }
-    });
-
-    map.addSource(borderSourceId, {
-      type: "geojson",
-      data: emptyFeatureCollection()
-    });
-
-    map.addLayer({
-      id: boroughBorderLayerId,
-      type: "line",
-      source: borderSourceId,
-      filter: ["==", ["get", "kind"], "borough"],
-      paint: {
-        "line-color": "#111827",
-        "line-opacity": 0.95,
-        "line-width": [
-          "interpolate",
-          ["linear"],
-          ["zoom"],
-          10, 2.2,
-          16, 5.2
+          10, 0.35,
+          16, 1.1
         ]
       }
     });
@@ -293,17 +268,18 @@ function createMap() {
     map.addLayer({
       id: neighborhoodBorderLayerId,
       type: "line",
-      source: borderSourceId,
-      filter: ["==", ["get", "kind"], "neighborhood"],
+      source: sourceId,
+      "source-layer": sourceLayer,
+      filter: ["in", ["to-string", ["get", "GEOID"]], ["literal", []]],
       paint: {
-        "line-color": ["get", "color"],
+        "line-color": "#2457a6",
         "line-opacity": 0.95,
         "line-width": [
           "interpolate",
           ["linear"],
           ["zoom"],
-          10, 1.8,
-          16, 4.2
+          10, 1.6,
+          16, 3.8
         ]
       }
     });
@@ -316,11 +292,6 @@ function createMap() {
 
     wireMapEvents();
     repaintBlocks();
-
-    map.on("idle", () => {
-      rememberVisibleBlockFeatures();
-      renderBorders();
-    });
   });
 }
 
@@ -534,148 +505,39 @@ function repaintBlocks() {
   renderBorders();
 }
 
-function rememberVisibleBlockFeatures() {
-  if (!map || !map.getSource(sourceId)) return;
-
-  const sourceFeatures = map.querySourceFeatures(sourceId, {
-    sourceLayer: sourceLayer
-  });
-
-  const renderedFeatures = map.getLayer(fillLayerId)
-    ? map.queryRenderedFeatures({ layers: [fillLayerId] })
-    : [];
-
-  for (const feature of [...sourceFeatures, ...renderedFeatures]) {
-    rememberBlockFeature(feature);
-  }
-}
-
-function rememberBlockFeature(feature) {
-  const geoid = getGeoid(feature);
-  if (!geoid || !feature.geometry) return;
-  if (blockFeaturesById.has(geoid)) return;
-
-  blockFeaturesById.set(geoid, {
-    type: "Feature",
-    properties: { GEOID: geoid },
-    geometry: cloneGeometry(feature.geometry)
-  });
-}
-
-function cloneGeometry(geometry) {
-  return {
-    type: geometry.type,
-    coordinates: JSON.parse(JSON.stringify(geometry.coordinates))
-  };
-}
-
 function renderBorders() {
-  if (!map || !map.getSource(borderSourceId)) return;
+  if (!map || !map.getLayer(neighborhoodBorderLayerId)) return;
 
-  const features = [];
-  const blockFeatures = Array.from(blockFeaturesById.values());
-
-  features.push(...lineFeaturesFromEdges(blockFeatures, {
-    kind: "borough",
-    name: "Wilkinsburg",
-    color: "#111827"
-  }));
+  const selectedGeoids = [];
+  const colorExpression = ["case"];
 
   for (const name of activeNeighborhoods) {
     ensureNeighborhoodState(name);
 
-    const selectedFeatures = Array.from(selectedByNeighborhood[name])
-      .map(geoid => blockFeaturesById.get(String(geoid)))
-      .filter(Boolean);
-
-    if (selectedFeatures.length === 0) continue;
-
-    features.push(...lineFeaturesFromEdges(selectedFeatures, {
-      kind: "neighborhood",
-      name,
-      color: colorForNeighborhood(name)
-    }));
+    for (const geoid of selectedByNeighborhood[name]) {
+      const blockId = String(geoid);
+      selectedGeoids.push(blockId);
+      colorExpression.push(
+        ["==", ["to-string", ["get", "GEOID"]], blockId],
+        colorForNeighborhood(name)
+      );
+    }
   }
 
-  map.getSource(borderSourceId).setData({
-    type: "FeatureCollection",
-    features
-  });
+  map.setFilter(neighborhoodBorderLayerId, [
+    "in",
+    ["to-string", ["get", "GEOID"]],
+    ["literal", selectedGeoids]
+  ]);
+
+  if (selectedGeoids.length > 0) {
+    colorExpression.push("#2457a6");
+    map.setPaintProperty(neighborhoodBorderLayerId, "line-color", colorExpression);
+  } else {
+    map.setPaintProperty(neighborhoodBorderLayerId, "line-color", "#2457a6");
+  }
 
   updateBorderVisibility();
-}
-
-function lineFeaturesFromEdges(features, properties) {
-  const edgeMap = new Map();
-
-  for (const feature of features) {
-    collectGeometryEdges(feature.geometry, edgeMap);
-  }
-
-  const lines = [];
-  for (const edge of edgeMap.values()) {
-    if (edge.count !== 1) continue;
-
-    lines.push({
-      type: "Feature",
-      properties,
-      geometry: {
-        type: "LineString",
-        coordinates: edge.coordinates
-      }
-    });
-  }
-
-  return lines;
-}
-
-function collectGeometryEdges(geometry, edgeMap) {
-  if (!geometry || !geometry.coordinates) return;
-
-  if (geometry.type === "Polygon") {
-    collectPolygonEdges(geometry.coordinates, edgeMap);
-  } else if (geometry.type === "MultiPolygon") {
-    for (const polygon of geometry.coordinates) {
-      collectPolygonEdges(polygon, edgeMap);
-    }
-  }
-}
-
-function collectPolygonEdges(rings, edgeMap) {
-  for (const ring of rings) {
-    for (let i = 0; i < ring.length - 1; i++) {
-      const start = ring[i];
-      const end = ring[i + 1];
-      const key = edgeKey(start, end);
-      const existing = edgeMap.get(key);
-
-      if (existing) {
-        existing.count++;
-      } else {
-        edgeMap.set(key, {
-          count: 1,
-          coordinates: [start, end]
-        });
-      }
-    }
-  }
-}
-
-function edgeKey(start, end) {
-  const a = normalizedPointKey(start);
-  const b = normalizedPointKey(end);
-  return a < b ? `${a}|${b}` : `${b}|${a}`;
-}
-
-function normalizedPointKey(point) {
-  return `${Number(point[0]).toFixed(6)},${Number(point[1]).toFixed(6)}`;
-}
-
-function emptyFeatureCollection() {
-  return {
-    type: "FeatureCollection",
-    features: []
-  };
 }
 
 function updateBorderVisibility() {
@@ -683,7 +545,7 @@ function updateBorderVisibility() {
 
   const visibility = showBorders ? "visible" : "none";
 
-  for (const layerId of [boroughBorderLayerId, neighborhoodBorderLayerId]) {
+  for (const layerId of [lineLayerId, neighborhoodBorderLayerId]) {
     if (map.getLayer(layerId)) {
       map.setLayoutProperty(layerId, "visibility", visibility);
     }
@@ -1121,16 +983,8 @@ function wireUiEvents() {
     }
   });
 
-  el.clearCurrentBtn.addEventListener("click", () => {
-    const name = currentNeighborhoodName();
-    selectedByNeighborhood[name].clear();
-
-    setStatus(`Cleared ${name}.`);
-    repaintBlocks();
-    renderBorders();
-    renderStep();
-    saveProgress();
-  });
+  el.clearCurrentBtn.addEventListener("click", clearCurrentNeighborhood);
+  el.mapClearCurrentBtn.addEventListener("click", clearCurrentNeighborhood);
 
   el.saveNextBtn.addEventListener("click", () => {
     if (isRevisionMode) {
@@ -1222,6 +1076,17 @@ function resizeMapSoon() {
   window.setTimeout(() => {
     if (map) map.resize();
   }, 180);
+}
+
+function clearCurrentNeighborhood() {
+  const name = currentNeighborhoodName();
+  selectedByNeighborhood[name].clear();
+
+  setStatus(`Cleared ${name}.`);
+  repaintBlocks();
+  renderBorders();
+  renderStep();
+  saveProgress();
 }
 
 async function searchLandmark(event) {

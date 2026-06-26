@@ -104,12 +104,10 @@ The app adds:
 
 - A block fill layer for selected/unselected colors.
 - A thin block line layer for base block outlines.
-- A GeoJSON border source for thick Wilkinsburg and neighborhood outlines.
-- A thick borough border layer.
-- A thick neighborhood border layer.
+- A thicker selected-neighborhood line layer drawn directly from the same Mapbox block source.
 - A Mapbox navigation control with the compass button labeled as **Rotate**.
 
-`map.on("idle", ...)` remembers visible block geometries and refreshes border overlays.
+The app previously tried to rebuild neighborhood outlines from cached vector-tile geometry. That was removed because tile fragments can create messy visual borders. The current version uses stable Mapbox filters and paint expressions instead.
 
 ## Drawing Behavior
 
@@ -126,14 +124,13 @@ It:
 1. Blocks drawing until the survey has started.
 2. Finds the current neighborhood.
 3. Reads the block GEOID from the Mapbox feature.
-4. Remembers the block geometry for border generation.
-5. In normal drawing, refuses to edit blocks already owned by another neighborhood.
-6. In validation revision mode, allows painting over another neighborhood, moving that block into the current one.
-7. Applies Paint or Erase.
-8. Repaints block colors.
-9. Renders borders.
-10. Updates the panel step.
-11. Saves progress.
+4. In normal drawing, refuses to edit blocks already owned by another neighborhood.
+5. In validation revision mode, allows painting over another neighborhood, moving that block into the current one.
+6. Applies Paint or Erase.
+7. Repaints block colors.
+8. Renders borders.
+9. Updates the panel step.
+10. Saves progress.
 
 ## Clear Behavior
 
@@ -165,20 +162,18 @@ Then it calls:
 
 ## Borders
 
-The app now draws thick borders in a separate GeoJSON source.
+The app draws borders using Mapbox line layers from the original block source.
 
-`rememberVisibleBlockFeatures()` caches block geometries as Mapbox features become visible.
+`lineLayerId` is the thin base block outline layer.
 
-`renderBorders()` creates:
+`neighborhoodBorderLayerId` is a thicker overlay for selected blocks. It uses:
 
-- A thick Wilkinsburg outline from all cached block geometries.
-- A thick outline around each drawn neighborhood from that neighborhood's selected block geometries.
-
-`lineFeaturesFromEdges(features, properties)` finds exterior edges by counting polygon edges. Edges that appear once are outer boundary edges. Shared internal edges appear twice and are removed.
+- `map.setFilter(...)` to include only selected block GEOIDs.
+- `map.setPaintProperty(...)` to color selected block lines by neighborhood.
 
 `#border-toggle` controls `showBorders`.
 
-`updateBorderVisibility()` switches the borough and neighborhood border layers between `visible` and `none`.
+`updateBorderVisibility()` switches the base block line layer and selected-neighborhood line layer between `visible` and `none`.
 
 ## Landmark Search
 
@@ -311,7 +306,7 @@ Use `http://localhost:3000/full-boundary-survey.html` for the reliable preview. 
 - Public Mapbox token is prefilled in source.
 - Neighborhood names render before map assets finish loading.
 - Map stays hidden until drawing starts.
-- Paint/Erase buttons live on the map only.
+- Paint, Erase, and Clear controls are available on the map.
 - Drag painting selects only contacted blocks.
 - Selected neighborhoods use different map colors.
 - Block count is hidden from the respondent during drawing.
@@ -321,6 +316,6 @@ Use `http://localhost:3000/full-boundary-survey.html` for the reliable preview. 
 - Users can validate and revise after drawing.
 - Users can move blocks between neighborhoods during validation revision.
 - Disconnected neighborhoods are explained when the user tries to continue.
-- Wilkinsburg and neighborhood borders can be shown/hidden.
+- Block and selected-neighborhood borders can be shown/hidden.
 - Landmark search can zoom to a searched place.
 - The rotate button has a visible label.
