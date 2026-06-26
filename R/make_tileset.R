@@ -68,7 +68,7 @@ if (nrow(d) == 0) {
 cat("Filtered to", nrow(d), "Wilkinsburg blocks.\n")
 print(st_bbox(d))
 
-g = poly2nb(d, queen = FALSE)
+g = poly2nb(d, queen = TRUE)
 ids = d$GEOID
 class(g) = "list"
 names(g) = ids

@@ -10,6 +10,8 @@ import {
 
 const sources = {
     js: "./src/**/*.js",
+    standaloneJs: "./src/full-boundary-survey.js",
+    standaloneCss: "./sass/full-boundary-survey.scss",
     css: "./sass/**/*.scss",
     html: "./html/*.html",
     assets: "./assets/**",
@@ -23,6 +25,12 @@ export const clean = () => new Promise(resolve => fs.rmdir("./docs", resolve));
 
 export const js = () => bundle();
 
+export const standaloneJs = () =>
+    gulp.src(sources.standaloneJs).pipe(gulp.dest("./docs"));
+
+export const previewStandaloneJs = () =>
+    gulp.src(sources.standaloneJs).pipe(gulp.dest("./html"));
+
 export const css = () =>
     gulp
         .src(sources.css)
@@ -35,6 +43,12 @@ export const css_min = () =>
         .pipe(sass({outputStyle: 'compressed'}))
         .pipe(gulp.dest("./docs/"));
 
+export const previewStandaloneCss = () =>
+    gulp
+        .src(sources.standaloneCss)
+        .pipe(sass())
+        .pipe(gulp.dest("./html/"));
+
 export const html = () => gulp.src(sources.html).pipe(gulp.dest("./docs"));
 
 export const assets = () =>
@@ -43,18 +57,18 @@ export const assets = () =>
 export const build = gulp.series(
     clean,
     //gulp.parallel(js, css, html, assets, deployFiles)
-    gulp.parallel(js, css_min, html, assets)
+    gulp.parallel(js, standaloneJs, previewStandaloneJs, css_min, previewStandaloneCss, html, assets)
 );
 
 export const devBuild = gulp.series(
     clean,
-    gulp.parallel(bundleWithCacheForDevelopment, css, html, assets)
+    gulp.parallel(bundleWithCacheForDevelopment, standaloneJs, previewStandaloneJs, css, previewStandaloneCss, html, assets)
 );
 
 export const watch = () => {
-    gulp.watch(sources.css, gulp.series(css, reload));
+    gulp.watch(sources.css, gulp.series(css, previewStandaloneCss, reload));
     gulp.watch(sources.html, gulp.series(html, reload));
-    gulp.watch(sources.js, gulp.series(bundleWithCacheForDevelopment, reload));
+    gulp.watch(sources.js, gulp.series(bundleWithCacheForDevelopment, standaloneJs, previewStandaloneJs, reload));
     gulp.watch(sources.assets, gulp.series(assets));
 };
 
