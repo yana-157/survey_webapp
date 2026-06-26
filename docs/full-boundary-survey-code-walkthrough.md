@@ -167,22 +167,20 @@ The clear confirmation is temporary. `setTemporaryStatus("Cleared ...", 3000)` s
 
 ## Borders
 
-The app draws borders from generated GeoJSON assets:
+The app draws selected-neighborhood outlines from the generated boundary-edge GeoJSON asset:
 
-- `assets/wilkinsburg_borough_boundary.geojson` stores the dissolved outside boundary of Wilkinsburg.
 - `assets/wilkinsburg_boundary_edges.geojson` stores side-aware block boundary edges. Each edge has an `a` block ID and either a neighboring `b` block ID or no `b` value for the outside borough edge.
-- Tiny borough-boundary fragments are ignored at draw time so they do not appear as stray black marks on the map.
 - Very short boundary-edge fragments are also filtered out before drawing selected-neighborhood outlines.
+- The app does not draw the external Wilkinsburg borough outline because the dissolved boundary was visually inaccurate in the survey map.
 
 `renderBorders()` uses those assets like this:
 
-- The borough layer always uses the dissolved Wilkinsburg boundary.
 - A selected neighborhood draws only edges where one side is selected and the other side is not selected.
 - Shared edges between two blocks in the same selected neighborhood are skipped, so the map shows the neighborhood outline instead of every internal block line.
 
 `#border-toggle` controls `showBorders`.
 
-`updateBorderVisibility()` switches the borough and selected-neighborhood border layers between `visible` and `none`.
+`updateBorderVisibility()` switches the selected-neighborhood border layer between `visible` and `none`.
 
 ## Landmark Search
 
@@ -327,6 +325,6 @@ Use `http://localhost:3000/full-boundary-survey.html` for the reliable preview. 
 - Users can validate and revise after drawing.
 - Users can move blocks between neighborhoods during validation revision.
 - Disconnected neighborhoods are explained when the user tries to continue.
-- Wilkinsburg and selected-neighborhood outer borders can be shown/hidden.
+- Selected-neighborhood outer borders can be shown/hidden.
 - Compact landmark search can zoom to a searched place and clear its marker.
 - The map uses Mapbox's standard compact navigation controls.
