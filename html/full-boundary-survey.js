@@ -111,6 +111,9 @@ const el = {
   reviewList: document.getElementById("review-list"),
   revisionNeighborhood: document.getElementById("revision-neighborhood"),
   reviseSelectedBtn: document.getElementById("revise-selected-btn"),
+  finalFeedback: document.getElementById("final-feedback"),
+  followupEmail: document.getElementById("followup-email"),
+  saveFeedbackBtn: document.getElementById("save-feedback-btn"),
   finishBtn: document.getElementById("finish-btn"),
 
   submitStatus: document.getElementById("submit-status"),
@@ -1275,6 +1278,14 @@ function wireUiEvents() {
     );
   });
 
+  el.saveFeedbackBtn.addEventListener("click", () => {
+    void savePostSubmissionDetails();
+  });
+
+  for (const input of [el.finalFeedback, el.followupEmail]) {
+    input.addEventListener("input", refreshFinalOutput);
+  }
+
   el.resetProgressBtn.addEventListener("click", async () => {
     const ok = await showChoiceDialog({
       title: "Reset saved progress?",
@@ -1697,17 +1708,15 @@ async function submitFinalResponse() {
   el.mapModeControls.hidden = true;
   el.finalJson.value = json;
 
-  const params = new URLSearchParams(window.location.hash.replace(/^#/, ""));
-  const supabaseUrl = params.get("supabase_url");
-  const supabaseAnonKey = params.get("supabase_anon_key");
+  const config = getSupabaseConfig();
 
-  if (!supabaseUrl || !supabaseAnonKey) {
+  if (!config) {
     el.submitStatus.textContent = "No Supabase connection configured. Download or copy the JSON/CSV response.";
     return;
   }
 
   try {
-    const client = supabase.createClient(supabaseUrl, supabaseAnonKey);
+    const client = supabase.createClient(config.url, config.anonKey);
     const { error } = await client
       .from(RESPONSE_TABLE)
       .insert({
@@ -1719,7 +1728,7 @@ async function submitFinalResponse() {
 
     const { error: spreadsheetError } = await client
       .from(SPREADSHEET_TABLE)
-      .insert(spreadsheetRow);
+      .upsert(spreadsheetRow, { onConflict: "respondent_id" });
 
     if (spreadsheetError) {
       console.error(spreadsheetError);
@@ -1733,6 +1742,47 @@ async function submitFinalResponse() {
     console.error(err);
     el.submitStatus.textContent = "Could not submit to Supabase. Download the JSON/CSV backup.";
   }
+}
+
+async function savePostSubmissionDetails() {
+  refreshFinalOutput();
+
+  const config = getSupabaseConfig();
+
+  if (!config) {
+    el.submitStatus.textContent = "Feedback added to the JSON/CSV backup on this page.";
+    return;
+  }
+
+  try {
+    const client = supabase.createClient(config.url, config.anonKey);
+    const { error } = await client
+      .from(SPREADSHEET_TABLE)
+      .upsert(buildSpreadsheetRow(buildPayload()), { onConflict: "respondent_id" });
+
+    if (error) throw error;
+
+    el.submitStatus.textContent = "Feedback saved to the same spreadsheet row.";
+  } catch (err) {
+    console.error(err);
+    el.submitStatus.textContent = "Could not save feedback. Download the CSV backup.";
+  }
+}
+
+function refreshFinalOutput() {
+  if (el.finalSection.hidden) return;
+
+  el.finalJson.value = JSON.stringify(buildPayload(), null, 2);
+}
+
+function getSupabaseConfig() {
+  const params = new URLSearchParams(window.location.hash.replace(/^#/, ""));
+  const url = params.get("supabase_url");
+  const anonKey = params.get("supabase_anon_key");
+
+  if (!url || !anonKey) return null;
+
+  return { url, anonKey };
 }
 
 function buildPayload() {
@@ -1753,7 +1803,9 @@ function buildPayload() {
     metadata: {
       relationship_to_wilkinsburg: el.relationship.value,
       anchor_area: el.anchorArea.value,
-      years_connected: el.yearsConnected.value
+      years_connected: el.yearsConnected.value,
+      final_feedback: el.finalFeedback.value.trim(),
+      followup_email: el.followupEmail.value.trim()
     }
   };
 }
@@ -1777,6 +1829,8 @@ function buildSpreadsheetRow(payload) {
     relationship_to_wilkinsburg: payload.metadata.relationship_to_wilkinsburg || "",
     anchor_area: payload.metadata.anchor_area || "",
     years_connected: payload.metadata.years_connected || "",
+    final_feedback: payload.metadata.final_feedback || "",
+    followup_email: payload.metadata.followup_email || "",
     active_neighborhoods: payload.active_neighborhoods,
     neighborhood_count: payload.active_neighborhoods.length,
     neighborhood_summary: neighborhoodRows
@@ -1800,6 +1854,8 @@ function buildSpreadsheetCsvRow(payload) {
     "relationship_to_wilkinsburg",
     "anchor_area",
     "years_connected",
+    "final_feedback",
+    "followup_email",
     "active_neighborhoods",
     "neighborhood_count",
     "neighborhood_summary",

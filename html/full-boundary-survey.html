@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 
   <link href="https://api.mapbox.com/mapbox-gl-js/v1.11.1/mapbox-gl.css" rel="stylesheet" />
-  <link rel="stylesheet" href="./full-boundary-survey.css?v=20260626-spreadsheet-1" />
+  <link rel="stylesheet" href="./full-boundary-survey.css?v=20260626-post-submit-feedback-1" />
 
   <script src="https://api.mapbox.com/mapbox-gl-js/v1.11.1/mapbox-gl.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -124,6 +124,15 @@
       <section id="final-section" hidden>
         <h2>Final response</h2>
         <p id="submit-status"></p>
+        <div class="question-group">
+          <label for="final-feedback">Feedback about this survey (optional)</label>
+          <textarea id="final-feedback" placeholder="Anything confusing, missing, or worth changing?"></textarea>
+        </div>
+        <div class="question-group">
+          <label for="followup-email">Email for additional surveys (optional)</label>
+          <input id="followup-email" type="email" autocomplete="email" placeholder="you@example.com" />
+        </div>
+        <button id="save-feedback-btn" type="button">Save feedback</button>
         <button id="download-json-btn" type="button">Download JSON backup</button>
         <button id="download-csv-btn" type="button">Download spreadsheet row</button>
         <textarea id="final-json" readonly></textarea>
@@ -178,6 +187,6 @@
     </div>
   </div>
 
-  <script src="./full-boundary-survey.js?v=20260626-spreadsheet-1"></script>
+  <script src="./full-boundary-survey.js?v=20260626-post-submit-feedback-1"></script>
 </body>
 </html>

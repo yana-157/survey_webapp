@@ -1,6 +1,7 @@
 -- Run this once in the Supabase SQL editor for the survey project.
 -- It creates the raw JSON response table plus a spreadsheet-friendly table
--- with one row per submission, indexed by respondent_id.
+-- with one row per respondent_id. The post-submission feedback form updates
+-- that same spreadsheet row.
 
 create table if not exists public.full_boundary_responses (
   id bigint generated always as identity primary key,
@@ -13,12 +14,13 @@ create index if not exists full_boundary_responses_respondent_id_idx
   on public.full_boundary_responses (respondent_id);
 
 create table if not exists public.full_boundary_response_spreadsheet (
-  id bigint generated always as identity primary key,
-  respondent_id text not null,
+  respondent_id text primary key,
   submitted_at timestamptz not null,
   relationship_to_wilkinsburg text,
   anchor_area text,
   years_connected text,
+  final_feedback text,
+  followup_email text,
   active_neighborhoods jsonb not null,
   neighborhood_count integer not null,
   neighborhood_summary text,
@@ -31,7 +33,13 @@ create table if not exists public.full_boundary_response_spreadsheet (
   response_json jsonb not null
 );
 
-create index if not exists full_boundary_response_spreadsheet_respondent_id_idx
+alter table public.full_boundary_response_spreadsheet
+  add column if not exists final_feedback text;
+
+alter table public.full_boundary_response_spreadsheet
+  add column if not exists followup_email text;
+
+create unique index if not exists full_boundary_response_spreadsheet_respondent_id_idx
   on public.full_boundary_response_spreadsheet (respondent_id);
 
 create index if not exists full_boundary_response_spreadsheet_submitted_at_idx
@@ -49,10 +57,18 @@ create policy "Allow public survey inserts"
 
 drop policy if exists "Allow public spreadsheet upserts" on public.full_boundary_response_spreadsheet;
 drop policy if exists "Allow public spreadsheet inserts" on public.full_boundary_response_spreadsheet;
+drop policy if exists "Allow public spreadsheet feedback updates" on public.full_boundary_response_spreadsheet;
 create policy "Allow public spreadsheet inserts"
   on public.full_boundary_response_spreadsheet
   for insert
   to anon
+  with check (true);
+
+create policy "Allow public spreadsheet feedback updates"
+  on public.full_boundary_response_spreadsheet
+  for update
+  to anon
+  using (true)
   with check (true);
 
 create or replace view public.full_boundary_response_export as
@@ -62,6 +78,8 @@ select
   relationship_to_wilkinsburg,
   anchor_area,
   years_connected,
+  final_feedback,
+  followup_email,
   neighborhood_count,
   neighborhood_summary,
   neighborhood_mappings,
