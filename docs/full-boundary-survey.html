@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 
   <link href="https://api.mapbox.com/mapbox-gl-js/v1.11.1/mapbox-gl.css" rel="stylesheet" />
-  <link rel="stylesheet" href="./full-boundary-survey.css?v=20260626-internal-dialog-2" />
+  <link rel="stylesheet" href="./full-boundary-survey.css?v=20260626-linear-review-1" />
 
   <script src="https://api.mapbox.com/mapbox-gl-js/v1.11.1/mapbox-gl.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -90,13 +90,7 @@
           <div id="progress-fill"></div>
         </div>
 
-        <div id="neighborhood-picker">
-          <button id="neighborhood-toggle" type="button" aria-expanded="false" aria-controls="neighborhood-list">
-            <span id="neighborhood-title"></span>
-            <span class="neighborhood-toggle-arrow" aria-hidden="true"></span>
-          </button>
-          <div id="neighborhood-list" hidden></div>
-        </div>
+        <h2 id="neighborhood-title"></h2>
 
         <p id="instructions">
           Drag to paint blocks. Switch to Erase to remove blocks.
@@ -156,6 +150,7 @@
       </div>
       <div id="map-neighborhood-picker">
         <button id="map-neighborhood-toggle" type="button" aria-expanded="false" aria-controls="map-neighborhood-list">
+          <span id="map-neighborhood-swatch" class="neighborhood-list-swatch" aria-hidden="true"></span>
           <span id="map-neighborhood-title"></span>
           <span class="neighborhood-toggle-arrow" aria-hidden="true"></span>
         </button>
@@ -182,6 +177,6 @@
     </div>
   </div>
 
-  <script src="./full-boundary-survey.js?v=20260626-internal-dialog-2"></script>
+  <script src="./full-boundary-survey.js?v=20260626-linear-review-1"></script>
 </body>
 </html>

@@ -89,8 +89,6 @@ const el = {
   stepLabel: document.getElementById("step-label"),
   progressFill: document.getElementById("progress-fill"),
   neighborhoodTitle: document.getElementById("neighborhood-title"),
-  neighborhoodToggle: document.getElementById("neighborhood-toggle"),
-  neighborhoodList: document.getElementById("neighborhood-list"),
   status: document.getElementById("status"),
 
   backBtn: document.getElementById("back-btn"),
@@ -109,6 +107,7 @@ const el = {
   mapPaintMode: document.getElementById("map-paint-mode"),
   mapEraseMode: document.getElementById("map-erase-mode"),
   mapClearCurrentBtn: document.getElementById("map-clear-current-btn"),
+  mapNeighborhoodSwatch: document.getElementById("map-neighborhood-swatch"),
   mapNeighborhoodTitle: document.getElementById("map-neighborhood-title"),
   mapNeighborhoodToggle: document.getElementById("map-neighborhood-toggle"),
   mapNeighborhoodList: document.getElementById("map-neighborhood-list"),
@@ -1184,7 +1183,6 @@ function ownerOfBlock(geoid, exceptNeighborhood = null) {
 }
 
 function wireUiEvents() {
-  el.neighborhoodToggle.addEventListener("click", toggleNeighborhoodList);
   el.mapNeighborhoodToggle.addEventListener("click", toggleNeighborhoodList);
   el.appDialogCancel.addEventListener("click", () => resolveChoiceDialog(false));
   el.appDialogConfirm.addEventListener("click", () => resolveChoiceDialog(true));
@@ -1481,6 +1479,7 @@ function renderStep() {
     : `Neighborhood ${currentIndex + 1} of ${activeNeighborhoods.length}`;
   el.neighborhoodTitle.textContent = isRevisionMode ? `Revise ${name}` : name;
   el.mapNeighborhoodTitle.textContent = isRevisionMode ? `Revise ${name}` : name;
+  el.mapNeighborhoodSwatch.style.background = colorForNeighborhood(name);
   renderNeighborhoodList();
   el.progressFill.style.width = isRevisionMode
     ? "100%"
@@ -1509,8 +1508,6 @@ function toggleNeighborhoodList() {
 
 function setNeighborhoodListOpen(open) {
   neighborhoodListOpen = open;
-  el.neighborhoodToggle.setAttribute("aria-expanded", open ? "true" : "false");
-  el.neighborhoodList.hidden = !open;
   el.mapNeighborhoodToggle.setAttribute("aria-expanded", open ? "true" : "false");
   el.mapNeighborhoodList.hidden = !open;
 }
@@ -1529,7 +1526,6 @@ function renderNeighborhoodList() {
     ...rows.filter(row => row.completed)
   ];
 
-  renderNeighborhoodListItems(el.neighborhoodList, orderedRows);
   renderNeighborhoodListItems(el.mapNeighborhoodList, orderedRows);
 
   setNeighborhoodListOpen(neighborhoodListOpen);

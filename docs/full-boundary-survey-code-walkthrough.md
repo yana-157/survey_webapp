@@ -23,11 +23,13 @@ Do source edits in `html/full-boundary-survey.html`, `src/full-boundary-survey.j
 3. The map is hidden until **Start drawing** is clicked.
 4. The user draws one neighborhood at a time.
 5. Paint/Erase controls live only on the map.
-6. **Save & next** validates that the current neighborhood has at least one block and is connected.
+6. **Save & next** checks the current neighborhood for empty, disconnected, or capacity issues and shows an internal app dialog if anything needs attention.
 7. After all neighborhoods, the user reaches **Validate your drawing**.
-8. From validation, the user can choose any neighborhood and revise it.
-9. During validation revision, painting over another neighborhood moves that block into the currently selected neighborhood.
-10. Final submission validates every selected neighborhood, every block assignment, and connectivity.
+8. The normal drawing flow stays ordered; the side panel does not let users jump between neighborhoods.
+9. From validation, the user can choose any neighborhood and revise it.
+10. After revising one neighborhood, **Back to validation** and **Done revising** both return to the validation screen so the user chooses the next fix there.
+11. During validation revision, painting over another neighborhood moves that block into the currently selected neighborhood.
+12. Final submission summarizes remaining issues in an internal app dialog and lets the user correct them or submit anyway.
 
 ## HTML Structure
 
@@ -38,7 +40,7 @@ Do source edits in `html/full-boundary-survey.html`, `src/full-boundary-survey.j
 - Header and reset button.
 - `#context-section` for respondent context.
 - `#neighborhood-setup-section` for choosing and adding neighborhood names.
-- `#draw-section` for drawing the current neighborhood, mirrored by an expandable neighborhood list on the map.
+- `#draw-section` for drawing the current neighborhood in a forced ordered flow.
 - `#review-section` for validation and neighborhood revision.
 - `#final-section` for submission status and JSON backup.
 
@@ -231,7 +233,7 @@ It:
 
 - Hides drawing controls in the panel.
 - Hides the map Paint/Erase controls until the user chooses to revise.
-- Renders a neighborhood dropdown.
+- Renders a neighborhood dropdown for validation-only revision.
 - Renders one review row per neighborhood.
 - Shows whether each neighborhood is connected.
 - Final submission describes empty, unassigned, or disconnected states and lets the user either correct them or submit anyway.
@@ -240,10 +242,11 @@ It:
 
 During revision:
 
-- The panel shows **Revise [neighborhood]** in the expandable neighborhood selector.
+- The panel shows **Revise [neighborhood]** as a plain heading.
 - **Back** names the previous neighborhood while drawing, is hidden on the first neighborhood, and becomes **Back to validation** during revision.
 - **Save & next** becomes **Done revising**.
 - Painting over a block from another neighborhood moves it into the selected neighborhood.
+- The bottom map neighborhood picker still shows colors, completed checks, and the current neighborhood, but revision choice happens back on the validation screen.
 
 ## Saving And Submission
 
