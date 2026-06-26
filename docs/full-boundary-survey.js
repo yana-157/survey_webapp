@@ -47,8 +47,7 @@ const NEIGHBORHOOD_COLORS = [
 
 const STORAGE_KEY = "wilkinsburg_full_boundary_survey_v2";
 const RESPONDENT_ID_KEY = "wilkinsburg_boundary_respondent_id";
-const RESPONSE_TABLE = "full_boundary_responses";
-const SPREADSHEET_TABLE = "full_boundary_response_spreadsheet";
+const RESPONDENT_WRITE_TOKEN_KEY = "wilkinsburg_boundary_write_token";
 
 let availableNeighborhoods = [...DEFAULT_NEIGHBORHOODS];
 let activeNeighborhoods = [...DEFAULT_NEIGHBORHOODS];
@@ -78,6 +77,7 @@ let landmarkSearchOpen = false;
 let neighborhoodListOpen = false;
 let showBorders = true;
 let respondentId = getOrCreateRespondentId();
+let respondentWriteToken = getOrCreateRespondentWriteToken();
 let statusClearTimer = null;
 let activeDialogResolve = null;
 
@@ -1299,6 +1299,7 @@ function wireUiEvents() {
 
     localStorage.removeItem(STORAGE_KEY);
     localStorage.removeItem(RESPONDENT_ID_KEY);
+    localStorage.removeItem(RESPONDENT_WRITE_TOKEN_KEY);
     window.location.reload();
   });
 
@@ -1744,24 +1745,14 @@ async function submitFinalResponse() {
 
   try {
     const client = supabase.createClient(config.url, config.anonKey);
-    const { error } = await client
-      .from(RESPONSE_TABLE)
-      .insert({
-        respondent_id: respondentId,
-        response_json: payload
-      });
+    const { error } = await client.rpc("submit_full_boundary_response", {
+      p_respondent_id: respondentId,
+      p_write_token: respondentWriteToken,
+      p_response_json: payload,
+      p_spreadsheet_row: spreadsheetRow
+    });
 
     if (error) throw error;
-
-    const { error: spreadsheetError } = await client
-      .from(SPREADSHEET_TABLE)
-      .upsert(spreadsheetRow, { onConflict: "respondent_id" });
-
-    if (spreadsheetError) {
-      console.error(spreadsheetError);
-      el.submitStatus.textContent = "Response saved, but the spreadsheet row could not be updated. Download the CSV backup.";
-      return;
-    }
 
     el.submitStatus.textContent = "Response submitted successfully and added to the spreadsheet table.";
     localStorage.removeItem(STORAGE_KEY);
@@ -1783,9 +1774,13 @@ async function savePostSubmissionDetails() {
 
   try {
     const client = supabase.createClient(config.url, config.anonKey);
-    const { error } = await client
-      .from(SPREADSHEET_TABLE)
-      .upsert(buildSpreadsheetRow(buildPayload()), { onConflict: "respondent_id" });
+    const { error } = await client.rpc("update_full_boundary_feedback", {
+      p_respondent_id: respondentId,
+      p_write_token: respondentWriteToken,
+      p_final_feedback: el.finalFeedback.value.trim(),
+      p_followup_email: el.followupEmail.value.trim(),
+      p_response_json: buildPayload()
+    });
 
     if (error) throw error;
 
@@ -1804,8 +1799,9 @@ function refreshFinalOutput() {
 
 function getSupabaseConfig() {
   const params = new URLSearchParams(window.location.hash.replace(/^#/, ""));
-  const url = params.get("supabase_url");
-  const anonKey = params.get("supabase_anon_key");
+  const config = window.WLB_SURVEY_CONFIG || {};
+  const url = params.get("supabase_url") || config.supabaseUrl || "";
+  const anonKey = params.get("supabase_anon_key") || config.supabaseAnonKey || "";
 
   if (!url || !anonKey) return null;
 
@@ -1981,6 +1977,20 @@ function getOrCreateRespondentId() {
   }
 
   return id;
+}
+
+function getOrCreateRespondentWriteToken() {
+  let token = localStorage.getItem(RESPONDENT_WRITE_TOKEN_KEY);
+
+  if (!token) {
+    token = crypto.randomUUID
+      ? crypto.randomUUID()
+      : String(Date.now()) + "-" + Math.random().toString(16).slice(2);
+
+    localStorage.setItem(RESPONDENT_WRITE_TOKEN_KEY, token);
+  }
+
+  return token;
 }
 
 function setStatus(message) {

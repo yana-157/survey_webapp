@@ -21,6 +21,8 @@
   --accent-dark: #1b427d;
   --danger: #9a341f;
   --shadow: none;
+  --map-control-gap: 1rem;
+  --map-picker-width: min(18rem, calc(100% - 2rem));
 }
 
 html,
@@ -194,8 +196,8 @@ body.landmark-search-open #map-search {
 #border-toggle-row {
   position: absolute;
   right: 1rem;
-  bottom: 1rem;
-  z-index: 7;
+  bottom: 4rem;
+  z-index: 13;
   display: inline-flex;
   width: fit-content;
   max-width: calc(100% - 1.5rem);
@@ -401,9 +403,9 @@ button:disabled {
   top: auto;
   right: 1rem;
   bottom: 1rem;
-  z-index: 12;
+  z-index: 14;
   display: grid;
-  width: min(18rem, calc(100% - 2rem));
+  width: var(--map-picker-width);
   gap: 0.3rem;
 }
 
@@ -665,8 +667,9 @@ button:disabled {
 
 #map-legend {
   position: absolute;
-  right: 16px;
-  bottom: 16px;
+  left: var(--map-control-gap);
+  right: calc(var(--map-picker-width) + (var(--map-control-gap) * 2));
+  bottom: var(--map-control-gap);
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem 0.8rem;
@@ -676,7 +679,9 @@ button:disabled {
   border-radius: 0.45rem;
   box-shadow: 0 1px 3px rgba(15, 23, 42, 0.12);
   font-size: 0.82rem;
-  max-width: min(520px, calc(100% - 32px));
+  max-height: 6rem;
+  max-width: none;
+  overflow: auto;
   backdrop-filter: blur(8px);
 }
 
@@ -766,6 +771,39 @@ button:disabled {
     --panel-width: clamp(25rem, 30vw, 30rem);
   }
 }
+@media (max-width: 1250px) and (min-width: 861px) {
+  #map-legend {
+    right: var(--map-control-gap);
+    bottom: 4rem;
+    max-width: min(36rem, calc(100% - 2rem));
+  }
+
+  #map-neighborhood-picker {
+    width: min(18rem, calc(50% - 1.5rem));
+  }
+
+  #border-toggle-row {
+    bottom: 7rem;
+  }
+}
+@media (max-width: 1040px) and (min-width: 861px) {
+  #map-search-toggle {
+    max-width: 12rem;
+    white-space: normal;
+  }
+
+  #map-mode-controls {
+    width: min(13.5rem, calc(100% - 17rem));
+  }
+
+  #map-legend {
+    display: none;
+  }
+
+  #border-toggle-row {
+    bottom: 4rem;
+  }
+}
 @media (max-width: 860px) {
   #app {
     display: block;
@@ -821,7 +859,7 @@ button:disabled {
   #map-mode-controls {
     top: 0.75rem;
     left: 3.25rem;
-    right: 5.75rem;
+    right: 6.5rem;
     width: auto;
     transform: none;
     align-items: start;
@@ -908,7 +946,7 @@ body:not(.map-expanded) #border-toggle-row {
   body.map-expanded #map-mode-controls {
     top: 0.75rem;
     left: 3.25rem;
-    right: 5.75rem;
+    right: 6.5rem;
     width: auto;
     transform: none;
   }
