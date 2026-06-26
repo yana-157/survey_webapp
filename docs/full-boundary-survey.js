@@ -3,9 +3,32 @@
 const SPECIFICATION_URL = "./assets/wilkinsburg.json";
 const GRAPH_URL = "./assets/wilkinsburg_graph.json";
 const BOUNDARY_EDGE_URL = "./assets/wilkinsburg_boundary_edges.geojson";
-const TRACED_BOUNDARY_URL = "./assets/wilkinsburg_traced_boundary.geojson";
+const BOROUGH_BOUNDARY_URL = "./assets/wilkinsburg_osm_boundary.geojson";
 const PUBLIC_MAPBOX_TOKEN = "pk.eyJ1IjoiY21jY2FydGFuIiwiYSI6ImNrZGdkdW9waTA1eGEycmxycnQzZ3o4c3kifQ.v_XViAm-nItfHgx0J3Xg3A";
 const MIN_BORDER_SEGMENT_LENGTH = 0.00004;
+const BASEMAP_STYLE = {
+  version: 8,
+  sources: {
+    carto: {
+      type: "raster",
+      tiles: [
+        "https://a.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png",
+        "https://b.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png",
+        "https://c.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png",
+        "https://d.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png"
+      ],
+      tileSize: 256,
+      attribution: "&copy; OpenStreetMap contributors &copy; CARTO"
+    }
+  },
+  layers: [
+    {
+      id: "carto-light",
+      type: "raster",
+      source: "carto"
+    }
+  ]
+};
 
 const DEFAULT_NEIGHBORHOODS = [
   "Hamnett",
@@ -168,7 +191,7 @@ async function init() {
   mapboxgl.accessToken = token;
 
   try {
-    const [loadedSpec, loadedGraph, loadedEdges, loadedTracedBoundary] = await Promise.all([
+    const [loadedSpec, loadedGraph, loadedEdges, loadedBoroughBoundary] = await Promise.all([
       fetch(SPECIFICATION_URL).then(r => {
         if (!r.ok) throw new Error("Could not load wilkinsburg.json");
         return r.json();
@@ -181,8 +204,8 @@ async function init() {
         if (!r.ok) throw new Error("Could not load wilkinsburg_boundary_edges.geojson");
         return r.json();
       }),
-      fetch(TRACED_BOUNDARY_URL).then(r => {
-        if (!r.ok) throw new Error("Could not load wilkinsburg_traced_boundary.geojson");
+      fetch(BOROUGH_BOUNDARY_URL).then(r => {
+        if (!r.ok) throw new Error("Could not load wilkinsburg_osm_boundary.geojson");
         return r.json();
       })
     ]);
@@ -190,7 +213,7 @@ async function init() {
     spec = normalizeSpec(loadedSpec);
     graph = normalizeGraph(loadedGraph);
     boundaryEdges = normalizeBoundaryEdges(loadedEdges);
-    boroughBoundaryFeatures = normalizeTracedBoundary(loadedTracedBoundary);
+    boroughBoundaryFeatures = normalizeBoroughBoundary(loadedBoroughBoundary);
     sourceLayer = spec.units.tileset.sourceLayer;
 
     createMap();
@@ -230,6 +253,7 @@ function getMapboxToken() {
 
 function normalizeSpec(rawSpec) {
   const units = rawSpec.units;
+  const source = normalizeTilesetSource(units.tileset.source);
 
   return {
     units: {
@@ -243,14 +267,25 @@ function normalizeSpec(rawSpec) {
       zoomTo: Number(first(units.zoomTo) || 14),
       tileset: {
         type: first(units.tileset.type),
-        source: {
-          type: first(units.tileset.source.type),
-          url: first(units.tileset.source.url)
-        },
+        source,
         sourceLayer: first(units.tileset.sourceLayer)
       }
     }
   };
+}
+
+function normalizeTilesetSource(rawSource) {
+  const source = {
+    type: first(rawSource.type)
+  };
+
+  const url = first(rawSource.url);
+  if (url) source.url = url;
+  if (rawSource.tiles) source.tiles = rawSource.tiles;
+  if (rawSource.minzoom !== undefined) source.minzoom = Number(first(rawSource.minzoom));
+  if (rawSource.maxzoom !== undefined) source.maxzoom = Number(first(rawSource.maxzoom));
+
+  return source;
 }
 
 function normalizeGraph(rawGraph) {
@@ -279,7 +314,7 @@ function normalizeBoundaryEdges(collection) {
     .filter(edge => edge.length >= MIN_BORDER_SEGMENT_LENGTH);
 }
 
-function normalizeTracedBoundary(collection) {
+function normalizeBoroughBoundary(collection) {
   return (collection.features || [])
     .filter(feature => feature.geometry)
     .map(feature => ({
@@ -323,7 +358,7 @@ function createMap() {
 
   map = new mapboxgl.Map({
     container: "map",
-    style: "mapbox://styles/mapbox/outdoors-v11",
+    style: BASEMAP_STYLE,
     bounds: bounds,
     fitBoundsOptions: { padding: 30 },
     minZoom: 12,
@@ -705,6 +740,8 @@ function customNeighborhoodCount() {
 }
 
 function renderMapLegend() {
+  if (!el.mapLegend) return;
+
   el.mapLegend.innerHTML = "";
 
   const current = currentNeighborhoodName();
