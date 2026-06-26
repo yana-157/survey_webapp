@@ -1634,35 +1634,62 @@ function showReview() {
     const item = document.createElement("div");
     item.className = "review-item";
 
-    const connected = isConnectedBlockSet(selectedByNeighborhood[name]);
-    const count = selectedByNeighborhood[name].size;
+    const status = reviewStatusForNeighborhood(name);
+    item.classList.toggle("has-issue", status.hasIssue);
 
-    item.innerHTML = `
-      <strong>${escapeHtml(name)}</strong>
-      <small>${count === 0 ? "No blocks yet" : connected ? "Connected" : "Not connected yet"}</small>
-    `;
+    const label = document.createElement("strong");
+    label.textContent = `${name}: ${status.label}`;
 
-    const edit = document.createElement("button");
-    edit.type = "button";
-    edit.textContent = `Revise ${name}`;
-    edit.addEventListener("click", () => {
-      startRevisionForNeighborhood(index);
-    });
+    const detail = document.createElement("small");
+    detail.textContent = status.detail;
 
-    item.appendChild(edit);
+    item.appendChild(label);
+    item.appendChild(detail);
     el.reviewList.appendChild(item);
   }
 
   saveProgress();
 }
 
+function reviewStatusForNeighborhood(name) {
+  ensureNeighborhoodState(name);
+
+  const blocks = selectedByNeighborhood[name];
+  const count = blocks.size;
+
+  if (count === 0) {
+    return {
+      hasIssue: true,
+      label: "Needs review",
+      detail: "No blocks selected."
+    };
+  }
+
+  const detail = disconnectedNeighborhoodDetail(name);
+
+  if (detail) {
+    return {
+      hasIssue: true,
+      label: "Needs review",
+      detail: `${count} block${count === 1 ? "" : "s"} selected, split into ${detail.groups} separate groups.`
+    };
+  }
+
+  return {
+    hasIssue: false,
+    label: "Looks good",
+    detail: `${count} block${count === 1 ? "" : "s"} selected and connected.`
+  };
+}
+
 function renderRevisionNeighborhoodOptions() {
   el.revisionNeighborhood.innerHTML = "";
 
   for (const [index, name] of activeNeighborhoods.entries()) {
+    const status = reviewStatusForNeighborhood(name);
     const option = document.createElement("option");
     option.value = String(index);
-    option.textContent = name;
+    option.textContent = status.hasIssue ? `${name} - needs review` : `${name} - looks good`;
     option.selected = index === currentIndex;
     el.revisionNeighborhood.appendChild(option);
   }

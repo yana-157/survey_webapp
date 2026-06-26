@@ -5,8 +5,11 @@
   <title>Wilkinsburg Neighborhood Boundary Survey</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;800&display=swap" rel="stylesheet" />
   <link href="https://api.mapbox.com/mapbox-gl-js/v1.11.1/mapbox-gl.css" rel="stylesheet" />
-  <link rel="stylesheet" href="./full-boundary-survey.css?v=20260626-post-submit-feedback-1" />
+  <link rel="stylesheet" href="./full-boundary-survey.css?v=20260626-roboto-review-1" />
 
   <script src="https://api.mapbox.com/mapbox-gl-js/v1.11.1/mapbox-gl.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -18,13 +21,13 @@
       <header>
         <h1>Wilkinsburg Neighborhood Boundary Survey</h1>
         <p id="intro">
-          Choose neighborhood names, then assign each block to a neighborhood.
+          Choose neighborhood names, then assign each block.
         </p>
-        <button id="reset-progress-btn" type="button">Reset all neighborhoods</button>
+        <button id="reset-progress-btn" type="button">Reset saved progress</button>
       </header>
 
       <section id="context-section">
-        <h2>Before you start:</h2>
+        <h2>Before you start</h2>
 
         <div class="question-group">
           <label for="relationship">Your relationship to Wilkinsburg</label>
@@ -108,9 +111,9 @@
       </section>
 
       <section id="review-section" hidden>
-        <h2>Confirm your drawing!</h2>
+        <h2>Validate your drawing</h2>
         <p>
-          Check the map before submitting. If something looks off, you can choose a neighborhood and revise it.
+          Check the map before submitting. If something looks off, choose a neighborhood and revise it.
         </p>
         <div class="question-group">
           <label for="revision-neighborhood">Neighborhood to revise</label>
@@ -122,14 +125,14 @@
       </section>
 
       <section id="final-section" hidden>
-        <h2>Thank you so much for your participation!</h2>
+        <h2>Final response</h2>
         <p id="submit-status"></p>
         <div class="question-group">
-          <label for="final-feedback">Have any feedback about this survey? (optional)</label>
+          <label for="final-feedback">Feedback about this survey (optional)</label>
           <textarea id="final-feedback" placeholder="Anything confusing, missing, or worth changing?"></textarea>
         </div>
         <div class="question-group">
-          <label for="followup-email">Enter your email if you'd like to hear about future surveys (optional):</label>
+          <label for="followup-email">Email for additional surveys (optional)</label>
           <input id="followup-email" type="email" autocomplete="email" placeholder="you@example.com" />
         </div>
         <button id="save-feedback-btn" type="button">Save feedback</button>
@@ -187,6 +190,6 @@
     </div>
   </div>
 
-  <script src="./full-boundary-survey.js?v=20260626-post-submit-feedback-1"></script>
+  <script src="./full-boundary-survey.js?v=20260626-roboto-review-1"></script>
 </body>
 </html>
