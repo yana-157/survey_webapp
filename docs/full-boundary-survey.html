@@ -22,13 +22,13 @@
       <header>
         <h1>Wilkinsburg Neighborhood Boundary Survey</h1>
         <p id="intro">
-          Choose neighborhood names, then assign each block.
+          Choose neighborhood names, then assign each block to a neighborhood.
         </p>
-        <button id="reset-progress-btn" type="button">Reset saved progress</button>
+        <button id="reset-progress-btn" type="button">Reset all neighborhoods</button>
       </header>
 
       <section id="context-section">
-        <h2>Before you start</h2>
+        <h2>Before you start:</h2>
 
         <div class="question-group">
           <label for="relationship">Your relationship to Wilkinsburg</label>
@@ -112,9 +112,9 @@
       </section>
 
       <section id="review-section" hidden>
-        <h2>Validate your drawing</h2>
+        <h2>Confirm your drawing!</h2>
         <p>
-          Check the map before submitting. If something looks off, choose a neighborhood and revise it.
+          Check the map before submitting. If something looks off, you can choose a neighborhood and revise it.
         </p>
         <div class="question-group">
           <label for="revision-neighborhood">Neighborhood to revise</label>
@@ -126,14 +126,14 @@
       </section>
 
       <section id="final-section" hidden>
-        <h2>Final response</h2>
+        <h2>Thank you so much for your participation!</h2>
         <p id="submit-status"></p>
         <div class="question-group">
-          <label for="final-feedback">Feedback about this survey (optional)</label>
+          <label for="final-feedback">Have any feedback about this survey? (optional)</label>
           <textarea id="final-feedback" placeholder="Anything confusing, missing, or worth changing?"></textarea>
         </div>
         <div class="question-group">
-          <label for="followup-email">Email for additional surveys (optional)</label>
+          <label for="followup-email">Enter your email if you'd like to hear about future surveys (optional):</label>
           <input id="followup-email" type="email" autocomplete="email" placeholder="you@example.com" />
         </div>
         <button id="save-feedback-btn" type="button">Save feedback</button>
