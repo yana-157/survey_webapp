@@ -3,7 +3,7 @@
 const SPECIFICATION_URL = "./assets/wilkinsburg.json";
 const GRAPH_URL = "./assets/wilkinsburg_graph.json";
 const BOUNDARY_EDGE_URL = "./assets/wilkinsburg_boundary_edges.geojson";
-const BOROUGH_BOUNDARY_URL = "./assets/wilkinsburg_osm_boundary.geojson";
+const BOROUGH_BOUNDARY_URL = "./assets/wilkinsburg_municipal_boundary.geojson";
 const PUBLIC_MAPBOX_TOKEN = "pk.eyJ1IjoiY21jY2FydGFuIiwiYSI6ImNrZGdkdW9waTA1eGEycmxycnQzZ3o4c3kifQ.v_XViAm-nItfHgx0J3Xg3A";
 const MIN_BORDER_SEGMENT_LENGTH = 0.00004;
 const BASEMAP_STYLE = {
@@ -205,7 +205,7 @@ async function init() {
         return r.json();
       }),
       fetch(BOROUGH_BOUNDARY_URL).then(r => {
-        if (!r.ok) throw new Error("Could not load wilkinsburg_osm_boundary.geojson");
+        if (!r.ok) throw new Error("Could not load wilkinsburg_municipal_boundary.geojson");
         return r.json();
       })
     ]);
@@ -281,7 +281,9 @@ function normalizeTilesetSource(rawSource) {
   };
 
   const url = first(rawSource.url);
+  const data = first(rawSource.data);
   if (url) source.url = url;
+  if (data) source.data = data;
   if (rawSource.tiles) source.tiles = rawSource.tiles;
   if (rawSource.minzoom !== undefined) source.minzoom = Number(first(rawSource.minzoom));
   if (rawSource.maxzoom !== undefined) source.maxzoom = Number(first(rawSource.maxzoom));
@@ -370,13 +372,17 @@ function createMap() {
   map.addControl(new mapboxgl.NavigationControl(), "top-left");
 
   map.on("load", () => {
+    const blockFilter = validBlockFilter();
+    const sourceLayerProperty = blockSourceLayerProperty();
+
     map.addSource(sourceId, spec.units.tileset.source);
 
     map.addLayer({
       id: fillLayerId,
       type: "fill",
       source: sourceId,
-      "source-layer": sourceLayer,
+      ...sourceLayerProperty,
+      filter: blockFilter,
       paint: {
         "fill-color": "#ffffff",
         "fill-opacity": 0.08
@@ -387,7 +393,8 @@ function createMap() {
       id: lineLayerId,
       type: "line",
       source: sourceId,
-      "source-layer": sourceLayer,
+      ...sourceLayerProperty,
+      filter: blockFilter,
       paint: {
         "line-color": "#475569",
         "line-opacity": 0.22,
@@ -455,6 +462,15 @@ function createMap() {
     wireMapEvents();
     repaintBlocks();
   });
+}
+
+function validBlockFilter() {
+  return ["in", ["get", "GEOID"], ["literal", Array.from(allBlockIds())]];
+}
+
+function blockSourceLayerProperty() {
+  if (spec.units.tileset.source.type !== "vector" || !sourceLayer) return {};
+  return { "source-layer": sourceLayer };
 }
 
 function expandBounds(bounds, amount) {

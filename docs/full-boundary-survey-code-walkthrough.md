@@ -1,158 +1,265 @@
 # Full Boundary Survey Project Walkthrough
 
-This document explains the current Wilkinsburg full-boundary survey app: what each main file does, how the user flow works, and how the map behavior is wired.
+This document explains the current Wilkinsburg Neighborhood Boundary Survey app: what each main file does, how the user flow works, how the map is drawn, how responses are saved, and where to edit things safely.
+
+The short version: the respondent moves through neighborhoods in order, paints blocks on a map, validates the drawing, optionally revises neighborhoods, submits the map, and can then leave feedback or an email for future surveys.
 
 ## Main Files
 
 - `html/full-boundary-survey.html` is the source HTML for the standalone survey page.
-- `src/full-boundary-survey.js` is the source JavaScript for map loading, drawing, validation, saving, review, and submission.
-- `sass/full-boundary-survey.scss` is the source styling for the responsive survey panel and map controls.
-- `docs/full-boundary-survey.html`, `docs/full-boundary-survey.js`, and `docs/full-boundary-survey.css` are generated build outputs.
+- `src/full-boundary-survey.js` is the source JavaScript for loading data, drawing on the map, validating neighborhoods, saving progress, submitting responses, and saving post-submission feedback.
+- `sass/full-boundary-survey.scss` is the source styling for the panel, map, controls, mobile drawer, dialogs, and responsive layout.
+- `assets/` contains source data used by the app.
+- `docs/` is the GitHub Pages build output. Do not hand-edit generated files in `docs/` unless you are intentionally patching a deployed artifact.
 - `html/full-boundary-survey.js` and `html/full-boundary-survey.css` are generated local-preview copies.
-- `assets/wilkinsburg_graph.json` stores the block adjacency graph used to validate connected neighborhoods.
-- `assets/wilkinsburg.json` stores the Mapbox tileset/source specification.
-- `R/make_tileset.R` documents how the Wilkinsburg blocks, graph, and tileset are generated.
-- `gulpfile.babel.js` copies and compiles the standalone files into `docs/` and `html/`.
+- `gulpfile.babel.js` controls the build process.
+- `.gitattributes` is a git metadata file from the earlier vector-tile version. The current editable block source is GeoJSON.
 
-Do source edits in `html/full-boundary-survey.html`, `src/full-boundary-survey.js`, and `sass/full-boundary-survey.scss`, then run `npm run build`.
+Make normal code changes in:
 
-## User Flow
+- `html/full-boundary-survey.html`
+- `src/full-boundary-survey.js`
+- `sass/full-boundary-survey.scss`
+- `assets/...`
+
+Then run:
+
+```bash
+npm run build
+```
+
+That rebuilds `docs/` for GitHub Pages and `html/` for local preview.
+
+## Data Files
+
+- `assets/wilkinsburg.json` tells the app where the Wilkinsburg block vector tiles are and what bounds to use.
+- `assets/wilkinsburg_blocks_clipped.geojson` contains the exact clipped selectable block polygons.
+- `assets/wilkinsburg_municipal_boundary.geojson` contains the official Wilkinsburg municipal boundary from Pennsylvania's municipal boundary FeatureServer.
+- `assets/wilkinsburg_graph.json` contains the clipped block adjacency graph used to check whether each neighborhood is connected.
+- `assets/wilkinsburg_boundary_edges.geojson` contains side-aware block-boundary edges used for selected-neighborhood outlines.
+- `assets/survey-config.js` is where the public Supabase URL and anon key can be added for deployed response collection.
+- `docs/supabase-response-spreadsheet.sql` contains the Supabase setup SQL.
+- `docs/DEPLOYMENT.md` explains deployment and Supabase setup.
+
+The block polygons are clipped to the official Wilkinsburg boundary. That means blocks stop at the borough border instead of spilling outside the official shape.
+
+## Current User Flow
 
 1. The user answers basic context questions.
 2. The user chooses which neighborhood names to include.
-3. The map is hidden until **Start drawing** is clicked.
-4. The user draws one neighborhood at a time.
-5. Paint/Erase controls live only on the map.
-6. **Save & next** checks the current neighborhood for empty, disconnected, or capacity issues and shows an internal app dialog if anything needs attention.
-7. After all neighborhoods, the user reaches **Validate your drawing**.
-8. The normal drawing flow stays ordered; the side panel does not let users jump between neighborhoods.
-9. From validation, the user can choose any neighborhood and revise it.
-10. After revising one neighborhood, **Back to validation** and **Done revising** both return to the validation screen so the user chooses the next fix there.
-11. During validation revision, painting over another neighborhood moves that block into the currently selected neighborhood.
-12. Final submission summarizes remaining issues in an internal app dialog and lets the user correct them or submit anyway.
+3. The map stays hidden until **Start drawing** is clicked.
+4. The user draws one neighborhood at a time in the selected order.
+5. The Paint, Erase, and Clear controls live on the map.
+6. **Save & next** checks the current neighborhood before moving forward.
+7. If the current neighborhood has an issue, an internal app dialog explains the issue and lets the user keep fixing or continue anyway.
+8. After all neighborhoods, the user reaches the validation screen.
+9. The validation screen lists each neighborhood with a status.
+10. The user can choose a neighborhood from the validation dropdown and revise it.
+11. During revision, painting over a block from another neighborhood moves that block into the revised neighborhood.
+12. After revising one neighborhood, the user returns to validation before choosing another one.
+13. Final submission checks for remaining issues.
+14. If issues remain, the app gives a summary and lets the user correct them or submit anyway.
+15. After final submission, the feedback and optional email fields appear.
+16. Feedback/email save back to the same respondent ID as the final map.
 
 ## HTML Structure
 
 `#app` contains the whole interface.
 
-`#panel` is the left/top survey panel. It contains:
+`#panel` is the survey panel. On desktop it sits on the left. On smaller screens it becomes the main full-width panel.
 
-- Header and reset button.
-- `#context-section` for respondent context.
-- `#neighborhood-setup-section` for choosing and adding neighborhood names.
-- `#draw-section` for drawing the current neighborhood in a forced ordered flow.
-- `#review-section` for validation and neighborhood revision.
-- `#final-section` for submission status and JSON backup.
+Important panel sections:
 
-`#map-wrap` is the map area. It contains:
+- `#intro` shows the opening copy.
+- `#context-section` contains relationship, known-area, and years-connected questions.
+- `#neighborhood-setup-section` lets the user choose, add, or remove neighborhood names before drawing.
+- `#draw-section` shows the current neighborhood, progress, Back, and Save & next.
+- `#review-section` shows validation statuses and the revision dropdown.
+- `#final-section` shows submission status, feedback, optional email, and backup download controls.
 
-- `#map-expand-btn`, the mobile map drawer toggle.
-- `#map-search`, the landmark/address search overlay.
-- `#map-mode-controls`, the map-only Paint/Erase controls.
-- `#map-neighborhood-picker`, the bottom map overlay for the current neighborhood and expandable neighborhood list.
-- `#border-toggle-row`, the Show borders checkbox.
-- `#map`, the Mapbox map container.
-- `#map-legend`, the older color legend, hidden on the expanded mobile map because the bottom neighborhood picker now carries the colors.
+`#map-wrap` contains the map experience:
 
-## JavaScript State
+- `#map-expand-btn` expands/collapses the mobile map drawer.
+- `#map-search-toggle` opens the landmark search panel.
+- `#map-search` contains the search input, Search button, Clear button, and search status.
+- `#map-mode-controls` contains Paint, Erase, and Clear.
+- `#map-neighborhood-picker` is the compact bottom dropdown-style current-neighborhood control.
+- `#map-neighborhood-list` opens from the compact picker and shows neighborhood names, swatches, current state, and completed checks.
+- `#border-toggle-row` shows/hides borough and neighborhood borders.
+- `#map` is the actual Mapbox GL container.
 
-Important constants:
+There is no large bottom legend anymore. The compact bottom picker is the only map neighborhood display.
+
+`#app-dialog-backdrop` and `#app-dialog` create internal app popups. The app avoids native `alert()` or `confirm()` dialogs for validation/submission decisions.
+
+## JavaScript Constants
+
+Important source URLs:
 
 - `SPECIFICATION_URL` points to `./assets/wilkinsburg.json`.
 - `GRAPH_URL` points to `./assets/wilkinsburg_graph.json`.
-- `PUBLIC_MAPBOX_TOKEN` stores the public Mapbox token.
-- `DEFAULT_NEIGHBORHOODS` defines the initial neighborhood names.
-- `NEIGHBORHOOD_COLORS` assigns distinct colors to neighborhoods.
+- `BOUNDARY_EDGE_URL` points to `./assets/wilkinsburg_boundary_edges.geojson`.
+- `BOROUGH_BOUNDARY_URL` points to `./assets/wilkinsburg_municipal_boundary.geojson`.
+
+Map constants:
+
+- `BASEMAP_STYLE` defines a token-free CARTO/OpenStreetMap raster basemap.
+- `PUBLIC_MAPBOX_TOKEN` is still available for Mapbox GL and landmark search.
+- `MIN_BORDER_SEGMENT_LENGTH` filters tiny edge fragments out of selected-neighborhood outlines.
+
+Neighborhood constants:
+
+- `DEFAULT_NEIGHBORHOODS` defines the starting neighborhood list.
+- `MAX_CUSTOM_NEIGHBORHOODS` caps added neighborhoods at 10.
+- `NEIGHBORHOOD_COLORS` contains the color palette used for neighborhoods.
+
+Storage constants:
+
 - `STORAGE_KEY` stores saved survey progress in `localStorage`.
-- `RESPONDENT_ID_KEY` stores a stable respondent ID.
+- `RESPONDENT_ID_KEY` stores the stable respondent ID.
+- `RESPONDENT_WRITE_TOKEN_KEY` stores a per-browser write token used when updating the same Supabase response row after final submission.
 
-Important mutable state:
+## JavaScript State
 
-- `availableNeighborhoods` is every neighborhood option shown in setup.
-- `activeNeighborhoods` is the subset the user selected.
-- `hasStarted` controls whether setup or drawing is visible.
-- `currentIndex` points to the current active neighborhood.
-- `paintMode` is either `"paint"` or `"erase"`.
-- `isRevisionMode` controls whether a validation edit is active.
-- `selectedByNeighborhood` maps neighborhood names to selected block GEOID sets.
-- `blockFeaturesById` caches Mapbox block geometries for border generation.
-- `showBorders` controls whether thick border layers are visible.
-- `searchMarker` stores the current landmark search marker.
+- `availableNeighborhoods` is every neighborhood option shown during setup.
+- `activeNeighborhoods` is the selected ordered list used for drawing.
+- `hasStarted` tracks whether drawing has begun.
+- `map` stores the Mapbox GL map instance.
+- `spec` stores normalized map/tile metadata from `wilkinsburg.json`.
+- `graph` stores the clipped adjacency graph.
+- `currentIndex` points to the current neighborhood.
+- `paintMode` is `"paint"` or `"erase"`.
+- `isRevisionMode` tracks whether the user is revising from validation.
+- `isPointerDown` tracks drag painting.
+- `selectedByNeighborhood` maps each neighborhood name to a `Set` of selected block GEOIDs.
+- `boundaryEdges` stores the side-aware edge data.
+- `boroughBoundaryFeatures` stores the official boundary feature used for the borough outline.
+- `searchMarker` stores the current landmark marker.
+- `landmarkSearchOpen` tracks whether the search panel is open.
+- `neighborhoodListOpen` tracks whether the compact bottom neighborhood list is open.
+- `showBorders` tracks whether border layers are visible.
+- `respondentId` and `respondentWriteToken` identify and protect a user's saved response.
 
-The `el` object caches all DOM nodes used by the script. This keeps the rest of the code from repeatedly calling `document.getElementById(...)`.
+The `el` object caches DOM elements. This keeps the rest of the file readable because code can use `el.mapSearchToggle` instead of repeatedly calling `document.getElementById("map-search-toggle")`.
 
 ## Startup
 
 `init()` runs immediately.
 
-It:
+It does this:
 
 1. Redirects `file://` previews to `http://localhost:3000/full-boundary-survey.html`.
-2. Initializes default state objects.
+2. Initializes state objects.
 3. Loads saved progress from `localStorage`.
-4. Wires button, form, resize, and map UI events.
-5. Renders the neighborhood setup.
-6. Applies the correct setup/drawing visibility.
-7. Loads the Mapbox token.
-8. Fetches `wilkinsburg.json` and `wilkinsburg_graph.json`.
-9. Normalizes the loaded data.
-10. Creates the Mapbox map.
-11. Restores the current drawing step if the survey had already started.
+4. Wires UI events.
+5. Renders setup controls.
+6. Applies setup/drawing visibility.
+7. Gets the Mapbox token.
+8. Fetches the map spec, graph, boundary edges, and official borough boundary.
+9. Normalizes all loaded data.
+10. Prunes saved selections that are no longer in the current clipped block graph.
+11. Creates the map.
+12. Restores the current drawing step if progress was already started.
 
 ## Map Setup
 
-`createMap()` builds the Mapbox map using the Wilkinsburg bounds and `outdoors-v11` style.
+`createMap()` builds the map.
 
-The app adds:
+The map uses:
 
-- A block fill layer for selected/unselected colors.
-- A thin block line layer for base block outlines.
-- A thicker selected-neighborhood line layer drawn directly from the same Mapbox block source.
-- A standard Mapbox navigation control for zooming and rotation.
+- CARTO/OpenStreetMap raster tiles as the basemap.
+- Local clipped Wilkinsburg GeoJSON from `assets/wilkinsburg_blocks_clipped.geojson` as the block source.
+- The official Pennsylvania municipal Wilkinsburg boundary as the borough outline.
 
-The app previously tried to rebuild neighborhood outlines from cached vector-tile geometry. That was removed because tile fragments can create messy visual borders. The current version uses stable Mapbox filters and paint expressions instead.
+The block source comes from `assets/wilkinsburg.json`:
+
+```json
+"data": "./assets/wilkinsburg_blocks_clipped.geojson?v=20260626-pa-boundary-6"
+```
+
+The source is GeoJSON instead of vector tiles. This avoids tile simplification and stale tile caching, both of which can otherwise make clipped blocks appear to cross the boundary. The `?v=...` query is still bumped when the clipped geometry changes so browsers fetch the newest GeoJSON.
+
+Map layers:
+
+- `fillLayerId` draws block fills. It changes color/opacity based on selected neighborhoods.
+- `lineLayerId` draws thin base block lines.
+- `boroughBorderLayerId` draws the official Wilkinsburg border.
+- `neighborhoodBorderLayerId` draws darker outlines around selected neighborhoods.
+
+Map controls:
+
+- Mapbox's standard navigation control is placed at top-left.
+- Search for Landmark sits near the top-left but offset so it does not cover the zoom buttons.
+- Paint/Erase/Clear are centered at the top of the map.
+- Borders and the compact neighborhood picker sit near the bottom.
+
+## Clipped Blocks
+
+The current block polygons are not just filtered by ID. They are geometrically clipped to the official Wilkinsburg boundary before being loaded into the map.
+
+That matters because:
+
+- Blocks outside Wilkinsburg do not appear as selectable shapes.
+- Blocks touching the border are cut at the border.
+- The block mesh reaches the border without leaving unnecessary outside pieces.
+- The graph and validation counts only include the clipped Wilkinsburg block set.
+
+The Pennsylvania-boundary-clipped graph has 419 block nodes.
+
+The map fill and line layers also use a defensive GEOID filter from the current clipped graph. That means even if a stale or unexpected tile contains extra block IDs, the app only renders blocks that belong to the current Wilkinsburg clipped graph.
+
+If the boundary or block source ever changes, regenerate both:
+
+- `assets/wilkinsburg_blocks_clipped.geojson`
+- `assets/wilkinsburg_graph.json`
+
+Then run `npm run build` so `docs/assets/` matches.
 
 ## Drawing Behavior
 
-The app uses exact pointer hit-testing.
+Drawing uses exact pointer hit-testing.
 
-- Click paints or erases the block directly under the pointer.
-- Dragging keeps the painting logic active, but still only changes a block when the pointer is actually over that block.
-- The earlier fuzzy-radius brush was removed.
+- Clicking paints or erases the single block under the pointer.
+- Dragging keeps the painting logic active.
+- Dragging only changes a block when the pointer actually contacts a block.
+- The app does not use a fuzzy brush radius.
 
-`applyPaintToFeatures(features)` is the core edit function.
+`applyPaintAtPoint(point)` asks Mapbox what feature is under the point, then passes that feature to `applyPaintToFeatures(features)`.
 
-It:
+`applyPaintToFeatures(features)`:
 
-1. Blocks drawing until the survey has started.
+1. Refuses drawing before the survey starts.
 2. Finds the current neighborhood.
-3. Reads the block GEOID from the Mapbox feature.
-4. In normal drawing, refuses to edit blocks already owned by another neighborhood.
-5. In validation revision mode, allows painting over another neighborhood, moving that block into the current one.
-6. Applies Paint or Erase.
-7. Repaints block colors.
-8. Renders borders.
-9. Updates the panel step.
-10. Saves progress.
+3. Reads the block GEOID.
+4. Skips duplicate features during a single paint pass.
+5. In normal drawing mode, refuses to overwrite blocks already assigned to another neighborhood.
+6. In revision mode, allows painting over another neighborhood and moves that block into the current neighborhood.
+7. Adds or removes the block depending on Paint or Erase.
+8. Repaints fills.
+9. Re-renders borders.
+10. Refreshes the step UI.
+11. Saves progress.
 
-## Clear Behavior
+## Paint, Erase, And Clear
 
-The **Clear this neighborhood** button clears the current neighborhood set:
+Paint mode adds contacted blocks to the current neighborhood.
+
+Erase mode removes contacted blocks from the current neighborhood only.
+
+Clear clears the whole current neighborhood:
 
 ```js
 selectedByNeighborhood[name].clear();
 ```
 
-Then it calls:
+Then the app calls:
 
-- `repaintBlocks()` to update fill colors immediately.
-- `renderBorders()` to remove that neighborhood's thick outline.
-- `renderStep()` to refresh labels.
-- `saveProgress()` to persist the cleared state.
+- `repaintBlocks()`
+- `renderBorders()`
+- `renderStep()`
+- `saveProgress()`
 
-The clear confirmation is temporary. `setTemporaryStatus("Cleared ...", 3000)` shows the message for about three seconds, then removes it unless another status message has replaced it.
-
-`repaintBlocks()` has a special empty-selection path. If no selected blocks remain anywhere, it sets the fill layer back to constant white/unselected styling instead of leaving Mapbox with an invalid or stale expression.
+The clear status message is temporary and disappears after about three seconds.
 
 ## Block Colors
 
@@ -160,110 +267,165 @@ The clear confirmation is temporary. `setTemporaryStatus("Cleared ...", 3000)` s
 
 - Current neighborhood blocks are more opaque.
 - Other selected neighborhoods are lower opacity.
-- Unassigned blocks are white and faint.
-- If there are no selected blocks, the fill layer is reset directly to white with low opacity.
+- Unassigned blocks are white/faint.
+- If no blocks are selected anywhere, the fill expression resets to the unselected style.
 
-`colorForNeighborhood(name)` chooses a stable color from `NEIGHBORHOOD_COLORS`.
+`colorForNeighborhood(name)` picks a stable color from `NEIGHBORHOOD_COLORS`.
+
+When custom neighborhoods are added, they use later colors from the same palette. The app allows up to 10 custom neighborhoods.
 
 ## Borders
 
-The app draws borders from generated GeoJSON assets:
+There are two visual border systems:
 
-- `assets/wilkinsburg_boundary_edges.geojson` stores side-aware block boundary edges. Each edge has an `a` block ID and either a neighboring `b` block ID or no `b` value for the outside borough edge.
-- `assets/wilkinsburg_traced_boundary.geojson` stores an external outline traced from the dissolved max-zoom block polygons decoded from `R/data/wilkinsburg.mbtiles`.
-- Very short boundary-edge fragments are also filtered out before drawing selected-neighborhood outlines.
-- The external border uses the traced block coverage instead of the older dissolved borough-boundary file, which left inaccurate fragments.
+1. The borough border.
+2. The selected-neighborhood border.
 
-`renderBorders()` uses those assets like this:
+The borough border comes from:
 
-- The external borough border is drawn from `wilkinsburg_traced_boundary.geojson`.
-- A selected neighborhood draws only edges where one side is selected and the other side is not selected.
-- Shared edges between two blocks in the same selected neighborhood are skipped, so the map shows the neighborhood outline instead of every internal block line.
+```text
+assets/wilkinsburg_municipal_boundary.geojson
+```
 
-`#border-toggle` controls `showBorders`.
+That is the official Wilkinsburg municipal boundary from Pennsylvania's municipal boundary FeatureServer, based on PennDOT/Bureau of Municipal Services data.
 
-`updateBorderVisibility()` switches the external and selected-neighborhood border layers between `visible` and `none`.
+Selected-neighborhood outlines come from:
+
+```text
+assets/wilkinsburg_boundary_edges.geojson
+```
+
+`renderBorders()` starts with the borough boundary feature, then adds selected-neighborhood edge features. It only adds an edge when one side is selected and the other side is not selected. Shared edges inside the same selected neighborhood are skipped, so users see an outline around the selected area rather than every internal block line.
+
+`#border-toggle` updates `showBorders`.
+
+`updateBorderVisibility()` switches the border layers between `visible` and `none`.
+
+## Compact Neighborhood Picker
+
+The bottom map picker shows the current neighborhood with:
+
+- A color swatch.
+- The current neighborhood name.
+- A small arrow.
+
+When opened, `#map-neighborhood-list` shows:
+
+- The current neighborhood highlighted.
+- Not-yet-completed neighborhoods.
+- Completed neighborhoods moved lower with a check mark.
+- Color swatches for each neighborhood.
+
+Outside the map, users are mostly forced through neighborhoods in order. The validation screen is where they can pick a neighborhood out of order to revise.
 
 ## Landmark Search
 
-`#map-search-toggle` opens and closes the compact landmark search panel. `#map-search` submits to `searchLandmark(event)`.
+`#map-search-toggle` opens and closes the landmark search panel.
 
-Search behavior:
+`searchLandmark(event)`:
 
-1. Reads the typed landmark/address.
-2. Biases the Mapbox Geocoding request to Wilkinsburg.
-3. Uses the Wilkinsburg bounding box and proximity center.
-4. Places a marker on the first result.
-5. Opens a popup with the returned place name. The popup close button is disabled so the X does not overlap the name.
+1. Reads the search text.
+2. Builds a Mapbox Geocoding request biased to the Wilkinsburg bounds.
+3. Uses the first result.
+4. Places a marker.
+5. Opens a popup with the place name.
 6. Flies the map to the result.
+7. Shows the Clear button.
 
-If no result is found, `#map-search-status` reports that. Once a marker exists, `#map-search-clear-btn` appears and removes the marker plus the status text.
+`clearSearchMarker()` removes the marker, hides the Clear button, and clears the status.
 
 ## Connectivity Validation
 
-Connectivity uses `assets/wilkinsburg_graph.json`, which maps each block GEOID to neighboring block GEOIDs.
+Connectivity uses `assets/wilkinsburg_graph.json`.
 
-`isConnectedBlockSet(blockSet)` returns true if the selected block set has zero or one connected component.
+The graph maps each block GEOID to neighboring block GEOIDs. Since the current graph is clipped, validation only considers blocks inside the official Wilkinsburg boundary.
 
-`countConnectedComponents(blockSet)` performs a graph traversal:
+`isConnectedBlockSet(blockSet)` returns true if the selected blocks have zero or one connected component.
 
-1. Convert all block IDs to strings.
-2. Keep a set of unvisited selected blocks.
-3. Start a stack from one unvisited block.
-4. Walk through graph neighbors that are also selected.
-5. Count how many separate traversals are needed.
+`countConnectedComponents(blockSet)`:
 
-`validateCurrentNeighborhoodBeforeMovingOn()` runs when **Save & next** is clicked.
+1. Converts selected IDs to strings.
+2. Keeps an `unvisited` set.
+3. Starts a stack from one unvisited block.
+4. Walks through graph neighbors that are also selected.
+5. Counts how many separate graph walks are needed.
 
-It prevents moving on if:
+`validateCurrentNeighborhoodBeforeMovingOn()` checks the current neighborhood when **Save & next** is clicked.
 
-- The current neighborhood has no blocks.
-- The current neighborhood has multiple disconnected groups.
-- There are too few unassigned blocks left to give every remaining selected neighborhood at least one block.
+It flags:
 
-When disconnected, `showDisconnectedNeighborhoodAlert(...)` gives detailed feedback, such as how many separate groups and selected blocks the neighborhood has.
+- No blocks selected.
+- Multiple disconnected groups.
+- Too few remaining unassigned blocks to give every later neighborhood at least one block.
 
-Final submit repeats the connectivity check as a backup.
+The popup is internal to the app, not a browser-native alert.
 
 ## Review And Revision
 
-`showReview()` displays **Validate your drawing**.
+`showReview()` displays the validation screen.
 
 It:
 
-- Hides drawing controls in the panel.
-- Hides the map Paint/Erase controls until the user chooses to revise.
-- Renders a neighborhood dropdown for validation-only revision.
-- Renders one review row per neighborhood.
-- Shows whether each neighborhood is connected.
-- Final submission describes empty, unassigned, or disconnected states and lets the user either correct them or submit anyway.
+- Hides the drawing section.
+- Shows the review section.
+- Hides map mode controls until revision starts.
+- Renders one validation row per neighborhood.
+- Highlights neighborhoods with issues.
+- Renders a dropdown for selecting one neighborhood to revise.
 
-`reviseSelectedNeighborhood()` reads the dropdown and calls `startRevisionForNeighborhood(index)`.
+`reviewStatusForNeighborhood(name)` returns:
+
+- `"Needs review"` when the neighborhood is empty or disconnected.
+- `"Looks good"` when it has selected blocks and is connected.
+
+`reviseSelectedNeighborhood()` reads the dropdown and starts revision for that neighborhood.
 
 During revision:
 
-- The panel shows **Revise [neighborhood]** as a plain heading.
-- **Back** names the previous neighborhood while drawing, is hidden on the first neighborhood, and becomes **Back to validation** during revision.
-- **Save & next** becomes **Done revising**.
-- Painting over a block from another neighborhood moves it into the selected neighborhood.
-- The bottom map neighborhood picker still shows colors, completed checks, and the current neighborhood, but revision choice happens back on the validation screen.
+- The panel shows `Revise [neighborhood]`.
+- Back becomes `Back to validation`.
+- Save & next becomes `Done revising`.
+- Painting over another neighborhood can move blocks into the current revised neighborhood.
+- After the revision, the user returns to validation to choose the next neighborhood.
 
-## Saving And Submission
+## Final Submission Validation
 
-`saveProgress()` stores:
+`submitFinalResponse()` runs final checks.
+
+If there are invalid states, the app shows a summary dialog. The final dialog is intentionally less detailed than the per-neighborhood popup. It tells the user that specific neighborhoods have issues and asks whether to correct them or submit anyway.
+
+Invalid state categories include:
+
+- Empty neighborhoods.
+- Disconnected neighborhoods.
+- Unassigned blocks.
+
+The user can still submit anyway.
+
+## Saving Progress
+
+`saveProgress()` stores progress in `localStorage`.
+
+It stores:
 
 - Respondent ID.
 - Current neighborhood index.
 - Available neighborhoods.
 - Active neighborhoods.
-- Whether drawing has started.
-- Border visibility preference.
-- All selected blocks by neighborhood.
+- Whether drawing started.
+- Border visibility.
+- Selected blocks by neighborhood.
 - Context question answers.
 
 `loadSavedProgress()` restores that state on reload.
 
-`buildPayload()` creates the final JSON response:
+After loading the clipped graph, `pruneSelectionsToCurrentBlocks()` removes any saved selections that no longer exist in the current clipped block set. This keeps older localStorage from causing weird counts after boundary/tile updates.
+
+## Response Payload
+
+`buildPayload()` creates the final JSON response.
+
+It includes:
 
 - `respondent_id`
 - `created_at`
@@ -273,44 +435,104 @@ During revision:
 - `invalid_states`
 - `metadata`
 
-`buildSpreadsheetRow()` converts that JSON response into one spreadsheet-friendly row. The row is indexed by `respondent_id` and includes:
+`buildSpreadsheetRow()` converts the payload into one spreadsheet-friendly row.
 
-- Respondent metadata.
-- Optional post-submission feedback and follow-up email.
-- The selected neighborhood count.
-- A readable neighborhood summary.
-- The full neighborhood-to-block mapping.
-- Unassigned block and invalid-state counts.
-- The full original JSON response.
+The row includes:
 
-`submitFinalResponse()` validates the full response. If Supabase URL/key are provided in the URL hash, it inserts the raw JSON into `full_boundary_responses` and upserts a spreadsheet row into `full_boundary_response_spreadsheet`. Otherwise it leaves JSON and CSV backups available for download.
+- Respondent ID.
+- Submission timestamp.
+- Context responses.
+- Active neighborhood names.
+- Neighborhood count.
+- Human-readable neighborhood summary.
+- Full neighborhood-to-block mapping.
+- Unassigned block count and IDs.
+- Invalid state count and details.
+- Full JSON response.
+- Optional feedback and email after submission.
 
-After final submission, the final screen shows optional feedback and email fields. `savePostSubmissionDetails()` saves those values back to the same `respondent_id` row in `full_boundary_response_spreadsheet`, and refreshes the JSON/CSV backup on the page.
+## Supabase Collection
 
-`docs/supabase-response-spreadsheet.sql` contains the Supabase setup SQL for the response tables, indexes, row-level-security policies, and an export view called `full_boundary_response_export`.
+Supabase is set up in the repo, but a real Supabase project still needs its SQL and public config.
+
+The app reads config from either:
+
+1. URL hash params.
+2. `window.WLB_SURVEY_CONFIG` in `assets/survey-config.js`.
+
+`assets/survey-config.js` should look like this after setup:
+
+```js
+window.WLB_SURVEY_CONFIG = {
+  supabaseUrl: "https://YOUR-PROJECT.supabase.co",
+  supabaseAnonKey: "YOUR-ANON-PUBLIC-KEY"
+};
+```
+
+Only the anon public key belongs in the website. Do not put a service-role key in this repo.
+
+The SQL file:
+
+```text
+docs/supabase-response-spreadsheet.sql
+```
+
+creates:
+
+- `full_boundary_responses`
+- `full_boundary_response_spreadsheet`
+- `full_boundary_response_export`
+- RPC function `submit_full_boundary_response(...)`
+- RPC function `update_full_boundary_feedback(...)`
+
+The app submits through RPC calls instead of direct public table inserts.
+
+`submitToSupabase(payload, spreadsheetRow)` sends the final map and spreadsheet row.
+
+`savePostSubmissionDetails()` sends feedback and optional email after final submission. It uses the same `respondent_id` and `respondentWriteToken`, so feedback/email update the same response row instead of creating a second respondent.
+
+If Supabase is not configured, the app still lets the user download JSON and CSV backups.
+
+## Generated Spreadsheet View
+
+For exporting responses, use:
+
+```sql
+select * from public.full_boundary_response_export;
+```
+
+That view is intended to behave like a spreadsheet:
+
+- One row per respondent.
+- Indexed by respondent ID.
+- Includes the full mapping and metadata.
+- Includes post-submission feedback/email when provided.
 
 ## Styling And Responsive Layout
 
-The SCSS builds a restrained, form-focused interface.
+The SCSS creates a clean form-and-map interface.
 
 Desktop:
 
-- The survey panel is fixed-width on the left.
-- The map fills the remaining space.
-- Map search, Paint/Erase, border toggle, and legend float over the map.
+- Survey panel is fixed-width on the left.
+- Map fills the rest of the screen.
+- Search is near the upper-left but offset from zoom controls.
+- Paint/Erase/Clear are centered at the top of the map.
+- Border toggle is near the bottom.
+- Compact neighborhood picker is at the bottom.
 
 Mobile:
 
-- The panel becomes full-screen.
-- The map becomes a bottom drawer after drawing starts.
+- Panel becomes full-screen.
+- Map appears as a bottom drawer after drawing starts.
 - The drawer can expand to full screen.
-- The legend is hidden until the drawer is expanded.
-- The search form and border toggle reposition to fit smaller screens.
+- Map-only controls appear when the drawer is expanded.
+- The compact picker remains the main neighborhood display.
 
-The font stack is intentionally common:
+The font is Roboto, with common fallbacks:
 
 ```css
-font-family: Arial, Helvetica, sans-serif;
+font-family: "Roboto", Arial, Helvetica, sans-serif;
 ```
 
 ## Build System
@@ -321,27 +543,71 @@ The build:
 
 - Cleans `docs/`.
 - Copies `src/full-boundary-survey.js` to `docs/` and `html/`.
-- Compiles `sass/full-boundary-survey.scss` to `docs/full-boundary-survey.css` and `html/full-boundary-survey.css`.
+- Compiles `sass/full-boundary-survey.scss` to CSS.
 - Copies `html/full-boundary-survey.html` to `docs/`.
-- Copies assets into `docs/assets`.
+- Copies `assets/` to `docs/assets/`.
 
-Use `http://localhost:3000/full-boundary-survey.html` for the reliable preview. The app redirects local `file://` previews to that URL.
+Local preview:
+
+```bash
+cd /Users/yana/survey_webapp
+python3 -m http.server 3000 --directory docs
+```
+
+Then open:
+
+```text
+http://localhost:3000/full-boundary-survey.html
+```
+
+The app redirects `file://` previews to localhost because map assets and fetches are more reliable through a local server.
+
+## Editing Guide
+
+Common edits:
+
+- Text copy: edit `html/full-boundary-survey.html`, then run `npm run build`.
+- Styling/layout: edit `sass/full-boundary-survey.scss`, then run `npm run build`.
+- Survey behavior: edit `src/full-boundary-survey.js`, then run `npm run build`.
+- Supabase public config: edit `assets/survey-config.js`, then run `npm run build`.
+- Boundary/block data: update `assets/wilkinsburg_municipal_boundary.geojson`, `assets/wilkinsburg_blocks_clipped.geojson`, and `assets/wilkinsburg_graph.json`, then run `npm run build`.
+
+After building:
+
+```bash
+git status
+git add ...
+git commit -m "Your message"
+git push origin main
+```
+
+GitHub Pages serves from `docs/`, so `docs/` must be committed for hosted updates to appear.
 
 ## Current Feature Checklist
 
-- Public Mapbox token is prefilled in source.
-- Neighborhood names render before map assets finish loading.
-- Map stays hidden until drawing starts.
-- Paint, Erase, and Clear controls are available on the map.
-- Drag painting selects only contacted blocks.
-- Selected neighborhoods use different map colors.
-- Block count is hidden from the respondent during drawing.
-- Each context question is visually separated.
-- The layout is responsive for desktop and mobile.
-- The map can expand on mobile.
-- Users can validate and revise after drawing.
-- Users can move blocks between neighborhoods during validation revision.
-- Disconnected neighborhoods are explained when the user tries to continue.
-- The traced Wilkinsburg border and selected-neighborhood outer borders can be shown/hidden.
-- Compact landmark search can zoom to a searched place and clear its marker.
-- The map uses Mapbox's standard compact navigation controls.
+- Roboto font.
+- Public Mapbox token present for Mapbox GL/geocoding.
+- Token-free CARTO/OpenStreetMap basemap.
+- Local clipped Wilkinsburg block GeoJSON.
+- Blocks clipped to the official Wilkinsburg boundary.
+- Official Pennsylvania Wilkinsburg municipal boundary.
+- Map hidden until drawing starts.
+- Paint, Erase, and Clear on the map.
+- Drag painting selects contacted blocks only.
+- Distinct colors for neighborhoods.
+- Large legend removed.
+- Compact map neighborhood picker with swatches and completed checks.
+- Block count hidden from respondents.
+- Context questions visually separated.
+- Responsive desktop and mobile layout.
+- Expandable mobile map drawer.
+- Landmark search with clear button.
+- Border show/hide toggle.
+- Ordered drawing flow.
+- Validation screen with status list and revision dropdown.
+- Per-neighborhood detailed issue popup.
+- Final summary issue popup with submit-anyway option.
+- Post-submission optional feedback.
+- Post-submission optional email for future surveys.
+- Supabase SQL and repo-side integration ready.
+- JSON and CSV backup downloads still available.
