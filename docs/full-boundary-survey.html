@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;800&display=swap" rel="stylesheet" />
   <link href="https://api.mapbox.com/mapbox-gl-js/v1.11.1/mapbox-gl.css" rel="stylesheet" />
-  <link rel="stylesheet" href="./full-boundary-survey.css?v=20260626-pa-boundary-6" />
+  <link rel="stylesheet" href="./full-boundary-survey.css?v=20260628-boundary-safe-9" />
 
   <script src="https://api.mapbox.com/mapbox-gl-js/v1.11.1/mapbox-gl.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -54,6 +54,20 @@
           <label for="years-connected">Years connected to Wilkinsburg</label>
           <select id="years-connected">
             <option value="">Select one</option>
+            <option>Less than 1 year</option>
+            <option>1–3 years</option>
+            <option>4–10 years</option>
+            <option>11–20 years</option>
+            <option>20+ years</option>
+            <option>Prefer not to say</option>
+          </select>
+        </div>
+
+        <div class="question-group">
+          <label for="homeowner-years">Are you a homeowner in Wilkinsburg?</label>
+          <select id="homeowner-years">
+            <option value="">Select one</option>
+            <option>No</option>
             <option>Less than 1 year</option>
             <option>1–3 years</option>
             <option>4–10 years</option>
@@ -190,6 +204,6 @@
     </div>
   </div>
 
-  <script src="./full-boundary-survey.js?v=20260626-pa-boundary-6"></script>
+  <script src="./full-boundary-survey.js?v=20260628-boundary-safe-9"></script>
 </body>
 </html>

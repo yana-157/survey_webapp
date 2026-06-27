@@ -3,7 +3,8 @@
 const SPECIFICATION_URL = "./assets/wilkinsburg.json";
 const GRAPH_URL = "./assets/wilkinsburg_graph.json";
 const BOUNDARY_EDGE_URL = "./assets/wilkinsburg_boundary_edges.geojson";
-const BOROUGH_BOUNDARY_URL = "./assets/wilkinsburg_municipal_boundary.geojson";
+const BOROUGH_BOUNDARY_URL = "./assets/wilkinsburg_selectable_boundary.geojson";
+const SURVEY_BOUNDARY_URL = "./assets/wilkinsburg_survey_boundary.geojson";
 const PUBLIC_MAPBOX_TOKEN = "pk.eyJ1IjoiY21jY2FydGFuIiwiYSI6ImNrZGdkdW9waTA1eGEycmxycnQzZ3o4c3kifQ.v_XViAm-nItfHgx0J3Xg3A";
 const MIN_BORDER_SEGMENT_LENGTH = 0.00004;
 const BASEMAP_STYLE = {
@@ -68,7 +69,7 @@ const NEIGHBORHOOD_COLORS = [
   "#c026d3"
 ];
 
-const STORAGE_KEY = "wilkinsburg_full_boundary_survey_v2";
+const STORAGE_KEY = "wilkinsburg_full_boundary_survey_v7";
 const RESPONDENT_ID_KEY = "wilkinsburg_boundary_respondent_id";
 const RESPONDENT_WRITE_TOKEN_KEY = "wilkinsburg_boundary_write_token";
 
@@ -87,6 +88,8 @@ let isPointerDown = false;
 let sourceId = "wlb-blocks";
 let fillLayerId = "wlb-block-fill";
 let lineLayerId = "wlb-block-line";
+let boundaryHitSourceId = "wlb-boundary-hit-source";
+let boundaryHitLayerId = "wlb-boundary-hit";
 let borderSourceId = "wlb-border-source";
 let boroughBorderLayerId = "wlb-borough-border";
 let neighborhoodBorderLayerId = "wlb-neighborhood-border";
@@ -110,6 +113,7 @@ const el = {
   relationship: document.getElementById("relationship"),
   anchorArea: document.getElementById("anchor-area"),
   yearsConnected: document.getElementById("years-connected"),
+  homeownerYears: document.getElementById("homeowner-years"),
 
   contextSection: document.getElementById("context-section"),
   neighborhoodSetupSection: document.getElementById("neighborhood-setup-section"),
@@ -205,7 +209,7 @@ async function init() {
         return r.json();
       }),
       fetch(BOROUGH_BOUNDARY_URL).then(r => {
-        if (!r.ok) throw new Error("Could not load wilkinsburg_municipal_boundary.geojson");
+        if (!r.ok) throw new Error("Could not load wilkinsburg_selectable_boundary.geojson");
         return r.json();
       })
     ]);
@@ -385,7 +389,8 @@ function createMap() {
       filter: blockFilter,
       paint: {
         "fill-color": "#ffffff",
-        "fill-opacity": 0.08
+        "fill-opacity": 0.08,
+        "fill-antialias": false
       }
     });
 
@@ -405,6 +410,22 @@ function createMap() {
           10, 0.35,
           16, 1.1
         ]
+      }
+    });
+
+    map.addSource(boundaryHitSourceId, {
+      type: "geojson",
+      data: SURVEY_BOUNDARY_URL
+    });
+
+    map.addLayer({
+      id: boundaryHitLayerId,
+      type: "fill",
+      source: boundaryHitSourceId,
+      paint: {
+        "fill-color": "#000000",
+        "fill-opacity": 0.001,
+        "fill-antialias": false
       }
     });
 
@@ -486,6 +507,8 @@ function wireMapEvents() {
   });
 
   map.on("mousedown", fillLayerId, e => {
+    if (!isPointInsideSurveyBoundary(e.point)) return;
+
     isPointerDown = true;
     map.dragPan.disable();
     applyPaintAtPoint(e.point);
@@ -507,10 +530,14 @@ function wireMapEvents() {
   window.addEventListener("mouseup", stopPainting);
 
   map.on("touchstart", fillLayerId, e => {
+    const point = e.point || (e.points && e.points[0]);
+
+    if (!isPointInsideSurveyBoundary(point)) return;
+
     isPointerDown = true;
     map.dragPan.disable();
     preventOriginalEvent(e);
-    applyPaintAtPoint(e.point || (e.points && e.points[0]));
+    applyPaintAtPoint(point);
   });
 
   map.on("touchmove", e => {
@@ -540,8 +567,15 @@ function preventOriginalEvent(e) {
 
 function featuresAtPoint(point) {
   if (!point) return [];
+  if (!isPointInsideSurveyBoundary(point)) return [];
 
   return map.queryRenderedFeatures(point, { layers: [fillLayerId] });
+}
+
+function isPointInsideSurveyBoundary(point) {
+  if (!point || !map || !map.getLayer(boundaryHitLayerId)) return false;
+
+  return map.queryRenderedFeatures(point, { layers: [boundaryHitLayerId] }).length > 0;
 }
 
 function applyPaintAtPoint(point) {
@@ -1369,7 +1403,7 @@ function wireUiEvents() {
     window.location.reload();
   });
 
-  for (const input of [el.relationship, el.anchorArea, el.yearsConnected]) {
+  for (const input of [el.relationship, el.anchorArea, el.yearsConnected, el.homeownerYears]) {
     input.addEventListener("change", saveProgress);
     input.addEventListener("input", saveProgress);
   }
@@ -1893,6 +1927,7 @@ function buildPayload() {
       relationship_to_wilkinsburg: el.relationship.value,
       anchor_area: el.anchorArea.value,
       years_connected: el.yearsConnected.value,
+      homeowner_years: el.homeownerYears.value,
       final_feedback: el.finalFeedback.value.trim(),
       followup_email: el.followupEmail.value.trim()
     }
@@ -1918,6 +1953,7 @@ function buildSpreadsheetRow(payload) {
     relationship_to_wilkinsburg: payload.metadata.relationship_to_wilkinsburg || "",
     anchor_area: payload.metadata.anchor_area || "",
     years_connected: payload.metadata.years_connected || "",
+    homeowner_years: payload.metadata.homeowner_years || "",
     final_feedback: payload.metadata.final_feedback || "",
     followup_email: payload.metadata.followup_email || "",
     active_neighborhoods: payload.active_neighborhoods,
@@ -1943,6 +1979,7 @@ function buildSpreadsheetCsvRow(payload) {
     "relationship_to_wilkinsburg",
     "anchor_area",
     "years_connected",
+    "homeowner_years",
     "final_feedback",
     "followup_email",
     "active_neighborhoods",
@@ -1982,7 +2019,8 @@ function saveProgress() {
     metadata: {
       relationship: el.relationship.value,
       anchorArea: el.anchorArea.value,
-      yearsConnected: el.yearsConnected.value
+      yearsConnected: el.yearsConnected.value,
+      homeownerYears: el.homeownerYears.value
     }
   };
 
@@ -2025,6 +2063,7 @@ function loadSavedProgress() {
       el.relationship.value = saved.metadata.relationship || "";
       el.anchorArea.value = saved.metadata.anchorArea || "";
       el.yearsConnected.value = saved.metadata.yearsConnected || "";
+      el.homeownerYears.value = saved.metadata.homeownerYears || "";
     }
   } catch (err) {
     console.warn("Could not load saved progress", err);

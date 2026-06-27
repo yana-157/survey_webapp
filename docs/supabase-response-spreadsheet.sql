@@ -28,6 +28,7 @@ create table if not exists public.full_boundary_response_spreadsheet (
   relationship_to_wilkinsburg text,
   anchor_area text,
   years_connected text,
+  homeowner_years text,
   final_feedback text,
   followup_email text,
   active_neighborhoods jsonb not null,
@@ -48,6 +49,9 @@ alter table public.full_boundary_response_spreadsheet
 
 alter table public.full_boundary_response_spreadsheet
   add column if not exists final_feedback text;
+
+alter table public.full_boundary_response_spreadsheet
+  add column if not exists homeowner_years text;
 
 alter table public.full_boundary_response_spreadsheet
   add column if not exists followup_email text;
@@ -107,6 +111,7 @@ begin
     relationship_to_wilkinsburg,
     anchor_area,
     years_connected,
+    homeowner_years,
     final_feedback,
     followup_email,
     active_neighborhoods,
@@ -128,6 +133,7 @@ begin
     p_spreadsheet_row->>'relationship_to_wilkinsburg',
     p_spreadsheet_row->>'anchor_area',
     p_spreadsheet_row->>'years_connected',
+    p_spreadsheet_row->>'homeowner_years',
     p_spreadsheet_row->>'final_feedback',
     p_spreadsheet_row->>'followup_email',
     coalesce(p_spreadsheet_row->'active_neighborhoods', '[]'::jsonb),
@@ -149,6 +155,7 @@ begin
     relationship_to_wilkinsburg = excluded.relationship_to_wilkinsburg,
     anchor_area = excluded.anchor_area,
     years_connected = excluded.years_connected,
+    homeowner_years = excluded.homeowner_years,
     final_feedback = excluded.final_feedback,
     followup_email = excluded.followup_email,
     active_neighborhoods = excluded.active_neighborhoods,
@@ -205,6 +212,7 @@ select
   relationship_to_wilkinsburg,
   anchor_area,
   years_connected,
+  homeowner_years,
   final_feedback,
   followup_email,
   neighborhood_count,

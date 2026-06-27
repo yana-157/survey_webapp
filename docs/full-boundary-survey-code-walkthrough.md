@@ -33,15 +33,31 @@ That rebuilds `docs/` for GitHub Pages and `html/` for local preview.
 ## Data Files
 
 - `assets/wilkinsburg.json` tells the app where the Wilkinsburg block vector tiles are and what bounds to use.
+- `assets/wilkinsburg_blocks_base.geojson` contains the clean committed block source used for rebuilding the survey block file.
 - `assets/wilkinsburg_blocks_clipped.geojson` contains the exact clipped selectable block polygons.
-- `assets/wilkinsburg_municipal_boundary.geojson` contains the official Wilkinsburg municipal boundary from Pennsylvania's municipal boundary FeatureServer.
+- `assets/wilkinsburg_osm_boundary.geojson` contains the clean OpenStreetMap Wilkinsburg boundary polygon.
+- `assets/wilkinsburg_survey_boundary.geojson` contains the survey boundary copied from the OSM polygon. This is the boundary used for clipping, display, verification, and hit-testing.
+- `assets/wilkinsburg_selectable_boundary.geojson` contains a derived outline generated from the exact selectable block polygons.
 - `assets/wilkinsburg_graph.json` contains the clipped block adjacency graph used to check whether each neighborhood is connected.
 - `assets/wilkinsburg_boundary_edges.geojson` contains side-aware block-boundary edges used for selected-neighborhood outlines.
 - `assets/survey-config.js` is where the public Supabase URL and anon key can be added for deployed response collection.
 - `docs/supabase-response-spreadsheet.sql` contains the Supabase setup SQL.
 - `docs/DEPLOYMENT.md` explains deployment and Supabase setup.
+- `scripts/build-wilkinsburg-survey-boundary.mjs` rebuilds the survey boundary polygon from the visible map-outline file.
+- `scripts/clip-wilkinsburg-blocks-to-survey-boundary.mjs` physically slices every selectable block against the survey boundary polygon.
+- `scripts/clean-wilkinsburg-road-artifacts.mjs` merges zero-population road-like artifacts into nearby real blocks.
+- `scripts/fill-wilkinsburg-internal-gaps.mjs` assigns internal road/gap space back into neighboring blocks so unpaintable gaps do not sit inside the visible boundary.
+- `scripts/split-wilkinsburg-disconnected-block-parts.mjs` splits any disconnected MultiPolygon pieces into separate paintable units so clicking one island does not paint another.
+- `scripts/generate-wilkinsburg-graph.mjs` rebuilds the adjacency graph from the current selectable block polygons.
+- `scripts/generate-wilkinsburg-selectable-boundary.mjs` rebuilds the visible map boundary from the exact selectable block polygons.
+- `scripts/generate-wilkinsburg-boundary-edges.mjs` rebuilds selected-neighborhood outline edges from the current clipped block polygons.
+- `scripts/verify-wilkinsburg-boundary.sh` checks that every selectable block geometry is covered by the survey boundary.
 
-The block polygons are clipped to the official Wilkinsburg boundary. That means blocks stop at the borough border instead of spilling outside the official shape.
+The block polygons are physically clipped to the Wilkinsburg survey boundary. That means blocks stop at the visible borough border instead of spilling outside the drawn shape. The old MBTiles source covers a larger area than Wilkinsburg, so the live survey uses local clipped GeoJSON instead of the original tileset.
+
+After clipping, zero-population road-like artifacts are merged into touching blocks so respondents do not have to paint roads as their own neighborhoods. A final boundary clip keeps every selectable block covered by the survey polygon.
+
+The visible boundary line uses `wilkinsburg_selectable_boundary.geojson`, which is generated from the exact paintable block union. The invisible hit-test layer still uses `wilkinsburg_survey_boundary.geojson`, so paint and erase are ignored unless the pointer is inside the survey boundary.
 
 ## Current User Flow
 
@@ -71,7 +87,7 @@ The block polygons are clipped to the official Wilkinsburg boundary. That means 
 Important panel sections:
 
 - `#intro` shows the opening copy.
-- `#context-section` contains relationship, known-area, and years-connected questions.
+- `#context-section` contains relationship, known-area, years-connected, and homeowner-years questions.
 - `#neighborhood-setup-section` lets the user choose, add, or remove neighborhood names before drawing.
 - `#draw-section` shows the current neighborhood, progress, Back, and Save & next.
 - `#review-section` shows validation statuses and the revision dropdown.
@@ -99,7 +115,7 @@ Important source URLs:
 - `SPECIFICATION_URL` points to `./assets/wilkinsburg.json`.
 - `GRAPH_URL` points to `./assets/wilkinsburg_graph.json`.
 - `BOUNDARY_EDGE_URL` points to `./assets/wilkinsburg_boundary_edges.geojson`.
-- `BOROUGH_BOUNDARY_URL` points to `./assets/wilkinsburg_municipal_boundary.geojson`.
+- `BOROUGH_BOUNDARY_URL` points to `./assets/wilkinsburg_survey_boundary.geojson`.
 
 Map constants:
 
@@ -169,12 +185,12 @@ The map uses:
 
 - CARTO/OpenStreetMap raster tiles as the basemap.
 - Local clipped Wilkinsburg GeoJSON from `assets/wilkinsburg_blocks_clipped.geojson` as the block source.
-- The official Pennsylvania municipal Wilkinsburg boundary as the borough outline.
+- `assets/wilkinsburg_survey_boundary.geojson` as the borough outline and invisible selection guard.
 
 The block source comes from `assets/wilkinsburg.json`:
 
 ```json
-"data": "./assets/wilkinsburg_blocks_clipped.geojson?v=20260626-pa-boundary-6"
+"data": "./assets/wilkinsburg_blocks_clipped.geojson?v=20260628-boundary-safe-9"
 ```
 
 The source is GeoJSON instead of vector tiles. This avoids tile simplification and stale tile caching, both of which can otherwise make clipped blocks appear to cross the boundary. The `?v=...` query is still bumped when the clipped geometry changes so browsers fetch the newest GeoJSON.
@@ -183,7 +199,8 @@ Map layers:
 
 - `fillLayerId` draws block fills. It changes color/opacity based on selected neighborhoods.
 - `lineLayerId` draws thin base block lines.
-- `boroughBorderLayerId` draws the official Wilkinsburg border.
+- `boundaryHitLayerId` is a nearly transparent fill over the survey boundary. It is used only to reject clicks and drags outside the valid survey area.
+- `boroughBorderLayerId` draws the visible border around the exact paintable block union.
 - `neighborhoodBorderLayerId` draws darker outlines around selected neighborhoods.
 
 Map controls:
@@ -195,7 +212,7 @@ Map controls:
 
 ## Clipped Blocks
 
-The current block polygons are not just filtered by ID. They are geometrically clipped to the official Wilkinsburg boundary before being loaded into the map.
+The current block polygons are not just filtered by ID. They are geometrically clipped to the Wilkinsburg survey boundary before being loaded into the map.
 
 That matters because:
 
@@ -204,14 +221,23 @@ That matters because:
 - The block mesh reaches the border without leaving unnecessary outside pieces.
 - The graph and validation counts only include the clipped Wilkinsburg block set.
 
-The Pennsylvania-boundary-clipped graph has 419 block nodes.
+The survey-boundary-clipped graph has 350 block nodes after small slivers, roads, internal gaps, and disconnected polygon parts are cleaned up.
 
 The map fill and line layers also use a defensive GEOID filter from the current clipped graph. That means even if a stale or unexpected tile contains extra block IDs, the app only renders blocks that belong to the current Wilkinsburg clipped graph.
 
 If the boundary or block source ever changes, regenerate both:
 
-- `assets/wilkinsburg_blocks_clipped.geojson`
-- `assets/wilkinsburg_graph.json`
+- `node scripts/build-wilkinsburg-survey-boundary.mjs`
+- `node scripts/clip-wilkinsburg-blocks-to-survey-boundary.mjs`
+- `node scripts/generate-wilkinsburg-graph.mjs`
+- `node scripts/generate-wilkinsburg-boundary-edges.mjs`
+- `node scripts/clean-wilkinsburg-road-artifacts.mjs`
+- `node scripts/fill-wilkinsburg-internal-gaps.mjs`
+- `node scripts/split-wilkinsburg-disconnected-block-parts.mjs`
+- `node scripts/generate-wilkinsburg-graph.mjs`
+- `node scripts/generate-wilkinsburg-selectable-boundary.mjs`
+- `node scripts/generate-wilkinsburg-boundary-edges.mjs`
+- `bash scripts/verify-wilkinsburg-boundary.sh`
 
 Then run `npm run build` so `docs/assets/` matches.
 
@@ -284,10 +310,16 @@ There are two visual border systems:
 The borough border comes from:
 
 ```text
-assets/wilkinsburg_municipal_boundary.geojson
+assets/wilkinsburg_survey_boundary.geojson
 ```
 
-That is the official Wilkinsburg municipal boundary from Pennsylvania's municipal boundary FeatureServer, based on PennDOT/Bureau of Municipal Services data.
+The invisible hit-test boundary comes from:
+
+```text
+assets/wilkinsburg_survey_boundary.geojson
+```
+
+The old Pennsylvania municipal boundary and traced boundary files are still kept as source history, but the current survey uses `assets/wilkinsburg_osm_boundary.geojson` through `assets/wilkinsburg_survey_boundary.geojson`.
 
 Selected-neighborhood outlines come from:
 
@@ -442,6 +474,7 @@ The row includes:
 - Respondent ID.
 - Submission timestamp.
 - Context responses.
+- Homeowner years, where `No` means the respondent is not a Wilkinsburg homeowner.
 - Active neighborhood names.
 - Neighborhood count.
 - Human-readable neighborhood summary.
@@ -570,7 +603,9 @@ Common edits:
 - Styling/layout: edit `sass/full-boundary-survey.scss`, then run `npm run build`.
 - Survey behavior: edit `src/full-boundary-survey.js`, then run `npm run build`.
 - Supabase public config: edit `assets/survey-config.js`, then run `npm run build`.
-- Boundary/block data: update `assets/wilkinsburg_municipal_boundary.geojson`, `assets/wilkinsburg_blocks_clipped.geojson`, and `assets/wilkinsburg_graph.json`, then run `npm run build`.
+- Boundary/block data: update `assets/wilkinsburg_osm_boundary.geojson` or `assets/wilkinsburg_blocks_base.geojson`, rebuild the survey boundary and clipped block files, then run `npm run build`.
+- Road-like block artifacts and slivers: run `node scripts/clean-wilkinsburg-road-artifacts.mjs`, then run `node scripts/fill-wilkinsburg-internal-gaps.mjs`, `node scripts/split-wilkinsburg-disconnected-block-parts.mjs`, run `node scripts/clean-wilkinsburg-road-artifacts.mjs` again, then run `node scripts/generate-wilkinsburg-graph.mjs`, `node scripts/generate-wilkinsburg-selectable-boundary.mjs`, `node scripts/generate-wilkinsburg-boundary-edges.mjs`, and `npm run build`.
+- Boundary safety check: run `bash scripts/verify-wilkinsburg-boundary.sh`. It fails if any selectable block geometry extends outside the survey boundary.
 
 After building:
 
@@ -589,8 +624,10 @@ GitHub Pages serves from `docs/`, so `docs/` must be committed for hosted update
 - Public Mapbox token present for Mapbox GL/geocoding.
 - Token-free CARTO/OpenStreetMap basemap.
 - Local clipped Wilkinsburg block GeoJSON.
-- Blocks clipped to the official Wilkinsburg boundary.
-- Official Pennsylvania Wilkinsburg municipal boundary.
+- Blocks clipped to the Wilkinsburg survey boundary.
+- Zero-population road-like artifacts merged into nearby selectable blocks.
+- Final block file clipped to the same survey boundary drawn on the map.
+- Invisible boundary hit-test layer prevents outside-boundary selection.
 - Map hidden until drawing starts.
 - Paint, Erase, and Clear on the map.
 - Drag painting selects contacted blocks only.
@@ -599,6 +636,7 @@ GitHub Pages serves from `docs/`, so `docs/` must be committed for hosted update
 - Compact map neighborhood picker with swatches and completed checks.
 - Block count hidden from respondents.
 - Context questions visually separated.
+- Homeowner question included in the starter context section.
 - Responsive desktop and mobile layout.
 - Expandable mobile map drawer.
 - Landmark search with clear button.
