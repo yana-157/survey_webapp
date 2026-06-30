@@ -1,9 +1,26 @@
 "use strict";
 
-const SPECIFICATION_URL = "./assets/wilkinsburg.json";
-const GRAPH_URL = "./assets/wilkinsburg_graph.json";
-const BOUNDARY_EDGE_URL = "./assets/wilkinsburg_boundary_edges.geojson";
-const BOROUGH_BOUNDARY_URL = "./assets/wilkinsburg_selectable_boundary.geojson";
+const SURVEY_VARIANTS = {
+  "saner-divisions": {
+    id: "saner-divisions",
+    specUrl: "./assets/wilkinsburg.json",
+    graphUrl: "./assets/wilkinsburg_graph.json",
+    boundaryEdgeUrl: "./assets/wilkinsburg_boundary_edges.geojson",
+    selectableBoundaryUrl: "./assets/wilkinsburg_selectable_boundary.geojson"
+  },
+  "fluid-grid": {
+    id: "fluid-grid",
+    specUrl: "./assets/wilkinsburg_fluid_grid.json",
+    graphUrl: "./assets/wilkinsburg_fluid_grid_graph.json",
+    boundaryEdgeUrl: "./assets/wilkinsburg_fluid_grid_boundary_edges.geojson",
+    selectableBoundaryUrl: "./assets/wilkinsburg_fluid_grid_selectable_boundary.geojson"
+  }
+};
+const SURVEY_VARIANT = getSurveyVariant();
+const SPECIFICATION_URL = SURVEY_VARIANT.specUrl;
+const GRAPH_URL = SURVEY_VARIANT.graphUrl;
+const BOUNDARY_EDGE_URL = SURVEY_VARIANT.boundaryEdgeUrl;
+const BOROUGH_BOUNDARY_URL = SURVEY_VARIANT.selectableBoundaryUrl;
 const SURVEY_BOUNDARY_URL = "./assets/wilkinsburg_survey_boundary.geojson";
 const PUBLIC_MAPBOX_TOKEN = "pk.eyJ1IjoiY21jY2FydGFuIiwiYSI6ImNrZGdkdW9waTA1eGEycmxycnQzZ3o4c3kifQ.v_XViAm-nItfHgx0J3Xg3A";
 const MIN_BORDER_SEGMENT_LENGTH = 0.00004;
@@ -69,7 +86,9 @@ const NEIGHBORHOOD_COLORS = [
   "#c026d3"
 ];
 
-const STORAGE_KEY = "wilkinsburg_full_boundary_survey_v7";
+const STORAGE_KEY = SURVEY_VARIANT.id === "saner-divisions"
+  ? "wilkinsburg_full_boundary_survey_v7"
+  : `wilkinsburg_full_boundary_survey_v7_${SURVEY_VARIANT.id}`;
 const RESPONDENT_ID_KEY = "wilkinsburg_boundary_respondent_id";
 const RESPONDENT_WRITE_TOKEN_KEY = "wilkinsburg_boundary_write_token";
 
@@ -238,6 +257,14 @@ function redirectFilePreviewToLocalhost() {
 
   window.location.replace("http://localhost:3000/full-boundary-survey.html");
   return true;
+}
+
+function getSurveyVariant() {
+  const query = new URLSearchParams(window.location.search);
+  const hash = new URLSearchParams(window.location.hash.replace(/^#/, ""));
+  const requested = query.get("division") || hash.get("division") || "saner-divisions";
+
+  return SURVEY_VARIANTS[requested] || SURVEY_VARIANTS["saner-divisions"];
 }
 
 function getMapboxToken() {
@@ -1924,6 +1951,7 @@ function buildPayload() {
     unassigned_blocks: unassignedBlockIds(),
     invalid_states: finalInvalidStateDetails(),
     metadata: {
+      division_layer: SURVEY_VARIANT.id,
       relationship_to_wilkinsburg: el.relationship.value,
       anchor_area: el.anchorArea.value,
       years_connected: el.yearsConnected.value,

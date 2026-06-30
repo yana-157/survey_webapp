@@ -1,0 +1,1 @@
+{"units":{"name":["Areas"],"id":["fluid-grid"],"idColumn":{"key":["GEOID"],"name":["GEOID"]},"bounds":[[-79.8954447,40.431479],[-79.8539672,40.459465]],"zoomTo":[14],"tileset":{"type":["fill"],"source":{"type":["geojson"],"data":"./assets/wilkinsburg_fluid_grid.geojson?v=20260630-fluid-grid-1"},"sourceLayer":[null]}}}
