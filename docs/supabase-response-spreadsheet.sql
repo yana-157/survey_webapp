@@ -65,6 +65,8 @@ create unique index if not exists full_boundary_response_spreadsheet_respondent_
 create index if not exists full_boundary_response_spreadsheet_submitted_at_idx
   on public.full_boundary_response_spreadsheet (submitted_at);
 
+drop index if exists public.full_boundary_response_spreadsheet_respondent_id_idx;
+
 alter table public.full_boundary_responses enable row level security;
 alter table public.full_boundary_response_spreadsheet enable row level security;
 
@@ -202,10 +204,18 @@ $$;
 
 revoke all on public.full_boundary_responses from anon, authenticated;
 revoke all on public.full_boundary_response_spreadsheet from anon, authenticated;
-grant execute on function public.submit_full_boundary_response(text, text, jsonb, jsonb) to anon;
-grant execute on function public.update_full_boundary_feedback(text, text, text, text, jsonb) to anon;
+revoke all on public.full_boundary_responses from public;
+revoke all on public.full_boundary_response_spreadsheet from public;
+grant select, insert, update, delete on public.full_boundary_responses to service_role;
+grant select, insert, update, delete on public.full_boundary_response_spreadsheet to service_role;
 
-create or replace view public.full_boundary_response_export as
+revoke execute on function public.submit_full_boundary_response(text, text, jsonb, jsonb) from public, authenticated;
+revoke execute on function public.update_full_boundary_feedback(text, text, text, text, jsonb) from public, authenticated;
+grant execute on function public.submit_full_boundary_response(text, text, jsonb, jsonb) to anon, service_role;
+grant execute on function public.update_full_boundary_feedback(text, text, text, text, jsonb) to anon, service_role;
+
+create or replace view public.full_boundary_response_export
+with (security_invoker = true) as
 select
   respondent_id,
   submitted_at,
@@ -225,3 +235,6 @@ select
   updated_at
 from public.full_boundary_response_spreadsheet
 order by submitted_at;
+
+revoke all on public.full_boundary_response_export from public, anon, authenticated;
+grant select on public.full_boundary_response_export to service_role;
