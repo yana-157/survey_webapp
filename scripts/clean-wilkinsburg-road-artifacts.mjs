@@ -11,6 +11,11 @@ const SKINNY_FEATURE_AREA_SQ_M = 20000;
 const SKINNY_FEATURE_COMPACTNESS = 0.22;
 const THIN_FEATURE_AREA_SQ_M = 20000;
 const THIN_FEATURE_WIDTH_M = 25;
+const ELONGATED_FEATURE_AREA_SQ_M = 40000;
+const ELONGATED_FEATURE_WIDTH_M = 140;
+const ELONGATED_FEATURE_RATIO = 3.8;
+const COMPLEX_ARTIFACT_AREA_SQ_M = 60000;
+const COMPLEX_ARTIFACT_COMPACTNESS = 0.28;
 const SPLIT_PART_AREA_SQ_M = 5000;
 const EARTH_RADIUS_M = 6371008.8;
 
@@ -28,6 +33,7 @@ const records = blocks.features.map(feature => {
     area: geometryAreaSqM(feature.geometry),
     compactness: geometryCompactness(feature.geometry),
     dimensions: geometryDimensionsM(feature.geometry),
+    holeCount: geometryHoleCount(feature.geometry),
     centroid: geometryCentroid(feature.geometry),
     segments: geometrySegments(feature.geometry)
   };
@@ -58,17 +64,6 @@ for (const artifact of roadArtifacts) {
       artifact_area_sq_m: Math.round(artifact.area),
       artifact_compactness: Number(artifact.compactness.toFixed(3))
     });
-    continue;
-  }
-
-  if (!touchingTarget && artifact.area < TINY_SLIVER_AREA_SQ_M) {
-    droppedArtifacts.push({
-      artifact_geoid: artifact.id,
-      artifact_area_sq_m: Math.round(artifact.area),
-      artifact_compactness: Number(artifact.compactness.toFixed(3)),
-      reason: "tiny_detached_artifact"
-    });
-    mergeTargets.set(artifact.id, target.id);
     continue;
   }
 
@@ -109,6 +104,11 @@ blocks.properties = {
     skinny_feature_compactness_threshold: SKINNY_FEATURE_COMPACTNESS,
     thin_feature_area_sq_m: THIN_FEATURE_AREA_SQ_M,
     thin_feature_width_m: THIN_FEATURE_WIDTH_M,
+    elongated_feature_area_sq_m: ELONGATED_FEATURE_AREA_SQ_M,
+    elongated_feature_width_m: ELONGATED_FEATURE_WIDTH_M,
+    elongated_feature_ratio: ELONGATED_FEATURE_RATIO,
+    complex_artifact_area_sq_m: COMPLEX_ARTIFACT_AREA_SQ_M,
+    complex_artifact_compactness: COMPLEX_ARTIFACT_COMPACTNESS,
     split_part_area_sq_m: SPLIT_PART_AREA_SQ_M,
     merged_count: mergeLog.length,
     dropped_count: droppedArtifacts.length,
@@ -138,11 +138,24 @@ function isRoadArtifact(record) {
   const hasNoResidents = Number(props.housing_units || 0) === 0 && Number(props.pop || 0) === 0;
   const isSplitPart = Boolean(props.original_geoid) && Number(props.split_part || 1) > 1;
   const minDimension = Math.min(record.dimensions.width, record.dimensions.height);
+  const maxDimension = Math.max(record.dimensions.width, record.dimensions.height);
+  const elongation = maxDimension / Math.max(minDimension, 1);
 
   if (record.area > 0 && record.area < TINY_SLIVER_AREA_SQ_M) return true;
   if (isSplitPart && record.area > 0 && record.area < SPLIT_PART_AREA_SQ_M) return true;
   if (record.area > 0 && record.area < SKINNY_FEATURE_AREA_SQ_M && record.compactness < SKINNY_FEATURE_COMPACTNESS) return true;
   if (record.area > 0 && record.area < THIN_FEATURE_AREA_SQ_M && minDimension < THIN_FEATURE_WIDTH_M) return true;
+  if (
+    record.area > 0 &&
+    record.area < ELONGATED_FEATURE_AREA_SQ_M &&
+    minDimension < ELONGATED_FEATURE_WIDTH_M &&
+    elongation >= ELONGATED_FEATURE_RATIO
+  ) return true;
+  if (
+    record.holeCount > 0 &&
+    record.area < COMPLEX_ARTIFACT_AREA_SQ_M &&
+    record.compactness < COMPLEX_ARTIFACT_COMPACTNESS
+  ) return true;
   if (!hasNoResidents) return false;
   if (record.area > 0 && record.area < SLIVER_AREA_SQ_M) return true;
 
@@ -295,6 +308,14 @@ function geometryDimensionsM(geometry) {
     width: maxX - minX,
     height: maxY - minY
   };
+}
+
+function geometryHoleCount(geometry) {
+  const polygons = geometry.type === "Polygon"
+    ? [geometry.coordinates]
+    : geometry.coordinates;
+
+  return polygons.reduce((sum, polygon) => sum + Math.max(0, polygon.length - 1), 0);
 }
 
 function touchingSmallBlock(sliver, candidates) {

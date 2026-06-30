@@ -944,13 +944,13 @@ function validateSetupBeforeStart() {
   const totalBlocks = allBlockIds().size;
 
   if (totalBlocks === 0) {
-    el.setupStatus.textContent = "The block graph has not loaded yet. Wait a moment and try again.";
+    el.setupStatus.textContent = "The area graph has not loaded yet. Wait a moment and try again.";
     return false;
   }
 
   if (activeNeighborhoods.length > totalBlocks) {
     el.setupStatus.textContent =
-      `You selected ${activeNeighborhoods.length} neighborhoods, but there are only ${totalBlocks} blocks.`;
+      `You selected ${activeNeighborhoods.length} neighborhoods, but there are only ${totalBlocks} areas.`;
     return false;
   }
 
@@ -1138,7 +1138,7 @@ function disconnectedNeighborhoodDetail(name) {
 
 function showDisconnectedNeighborhoodAlert(details) {
   const rows = details.filter(Boolean).map(detail => {
-    return `- ${detail.name}: ${detail.groups} separate groups across ${detail.blocks} selected blocks`;
+    return `- ${detail.name}: ${detail.groups} separate groups across ${detail.blocks} selected areas`;
   });
 
   if (rows.length === 0) return;
@@ -1146,7 +1146,7 @@ function showDisconnectedNeighborhoodAlert(details) {
   alert(
     "Some neighborhoods are not connected yet.\n\n" +
     rows.join("\n") +
-    "\n\nAdd connecting blocks or erase isolated pieces before continuing."
+    "\n\nAdd connecting areas or erase isolated pieces before continuing."
   );
 }
 
@@ -1155,9 +1155,9 @@ function validateEveryActiveNeighborhoodHasBlocks() {
 
   if (empty.length > 0) {
     alert(
-      "These selected neighborhoods still have no blocks assigned: " +
+      "These selected neighborhoods still have no areas assigned: " +
       empty.join(", ") +
-      ". Every selected neighborhood must receive at least one block."
+      ". Every selected neighborhood must receive at least one area."
     );
     return false;
   }
@@ -1170,7 +1170,7 @@ function validateAllBlocksAssigned() {
 
   if (missing.length > 0) {
     alert(
-      "Some blocks are still unassigned. Every block must be assigned to a neighborhood before submitting."
+      "Some areas are still unassigned. Every area must be assigned to a neighborhood before submitting."
     );
     return false;
   }
@@ -1189,7 +1189,7 @@ function finalInvalidStateDetails() {
       details.push({
         type: "empty",
         name,
-        message: `${name} has no blocks selected.`
+        message: `${name} has no areas selected.`
       });
     }
   }
@@ -1197,7 +1197,7 @@ function finalInvalidStateDetails() {
   if (unassigned.length > 0) {
     details.push({
       type: "unassigned",
-      message: `${unassigned.length} block${unassigned.length === 1 ? " is" : "s are"} still unassigned.`
+      message: `${unassigned.length} area${unassigned.length === 1 ? " is" : "s are"} still unassigned.`
     });
   }
 
@@ -1205,7 +1205,7 @@ function finalInvalidStateDetails() {
     details.push({
       type: "disconnected",
       name: detail.name,
-      message: `${detail.name} has ${detail.groups} separate groups across ${detail.blocks} selected blocks.`
+      message: `${detail.name} has ${detail.groups} separate groups across ${detail.blocks} selected areas.`
     });
   }
 
@@ -1226,7 +1226,7 @@ async function confirmSubmitWithInvalidStates(details) {
   }
 
   if (hasUnassigned) {
-    rows.push("Some blocks are still unassigned.");
+    rows.push("Some areas are still unassigned.");
   }
 
   return showChoiceDialog({
@@ -1243,7 +1243,7 @@ function currentNeighborhoodIssueDetails(name) {
   const blocks = selectedByNeighborhood[name];
 
   if (blocks.size === 0) {
-    issues.push(`${name} has no blocks selected.`);
+    issues.push(`${name} has no areas selected.`);
   }
 
   if (blocks.size > 1 && !isConnectedBlockSet(blocks)) {
@@ -1252,7 +1252,7 @@ function currentNeighborhoodIssueDetails(name) {
   }
 
   if (!hasRemainingCapacity(name)) {
-    issues.push("There may not be enough unassigned blocks left for every remaining neighborhood.");
+    issues.push("There may not be enough unassigned areas left for every remaining neighborhood.");
   }
 
   return issues;
@@ -1762,7 +1762,7 @@ function reviewStatusForNeighborhood(name) {
     return {
       hasIssue: true,
       label: "Needs review",
-      detail: "No blocks selected."
+      detail: "No areas selected."
     };
   }
 
@@ -1772,14 +1772,14 @@ function reviewStatusForNeighborhood(name) {
     return {
       hasIssue: true,
       label: "Needs review",
-      detail: `${count} block${count === 1 ? "" : "s"} selected, split into ${detail.groups} separate groups.`
+      detail: `${count} area${count === 1 ? "" : "s"} selected, split into ${detail.groups} separate groups.`
     };
   }
 
   return {
     hasIssue: false,
     label: "Looks good",
-    detail: `${count} block${count === 1 ? "" : "s"} selected and connected.`
+    detail: `${count} area${count === 1 ? "" : "s"} selected and connected.`
   };
 }
 
@@ -1959,7 +1959,7 @@ function buildSpreadsheetRow(payload) {
     active_neighborhoods: payload.active_neighborhoods,
     neighborhood_count: payload.active_neighborhoods.length,
     neighborhood_summary: neighborhoodRows
-      .map(row => `${row.order}. ${row.name}: ${row.block_count} block${row.block_count === 1 ? "" : "s"}`)
+      .map(row => `${row.order}. ${row.name}: ${row.block_count} area${row.block_count === 1 ? "" : "s"}`)
       .join("\n"),
     neighborhood_mappings: payload.neighborhoods,
     neighborhood_rows: neighborhoodRows,
