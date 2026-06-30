@@ -1,60 +1,50 @@
 import fs from "fs";
 import pc from "polygon-clipping";
 
-const BLOCKS_PATH = "assets/wilkinsburg_blocks_base.geojson";
+const BLOCKS_PATH = "assets/wilkinsburg_blocks_clipped.geojson";
 const BOUNDARY_PATH = "assets/wilkinsburg_survey_boundary.geojson";
-const TRACTS_PATH = "assets/wilkinsburg_census_tracts.geojson";
 const GRID_PATH = "assets/wilkinsburg_fluid_grid.geojson";
 const GRAPH_PATH = "assets/wilkinsburg_fluid_grid_graph.json";
 const EDGES_PATH = "assets/wilkinsburg_fluid_grid_boundary_edges.geojson";
 const OUTLINE_PATH = "assets/wilkinsburg_fluid_grid_selectable_boundary.geojson";
 const SPEC_PATH = "assets/wilkinsburg_fluid_grid.json";
-const CELL_WIDTH_M = 120;
-const CELL_HEIGHT_M = 120;
-const MIN_CELL_AREA_SQ_M = 3500;
-const FRINGE_TRACT_AREA_SQ_M = 60000;
+const MAX_UNIT_AREA_SQ_M = 30000;
+const TARGET_UNIT_AREA_SQ_M = 16000;
+const MIN_SPLIT_PART_AREA_SQ_M = 3500;
+const MAX_PARTS_PER_BLOCK = 10;
 const COORD_PRECISION = 7;
 const EARTH_RADIUS_M = 6371008.8;
 
 const blocks = readJson(BLOCKS_PATH);
 const boundary = readJson(BOUNDARY_PATH);
-const tracts = readJson(TRACTS_PATH);
-const latitudeOrigin = averageLatitude(boundary);
-const boundaryMultiPolygon = collectionToMultiPolygon(boundary);
-const tractRecords = tracts.features.map(feature => ({
-  feature,
-  area: geometryAreaSqM(feature.geometry),
-  multiPolygon: geometryToMultiPolygon(feature.geometry)
-}));
-const dominantAngle = dominantStreetAngle(blocks);
-const gridFeatures = mergeSmallCells(generateGridCells());
-const graph = buildGraph(gridFeatures);
-const edges = buildEdges(gridFeatures);
+const latitudeOrigin = averageLatitude(blocks);
+const flowFeatures = buildRoadFlowFeatures();
+const graph = buildGraph(flowFeatures);
+const edges = buildEdges(flowFeatures);
 const bounds = lonLatBounds(boundary);
 
 const grid = {
   type: "FeatureCollection",
   properties: {
-    generated_from: BOUNDARY_PATH,
-    street_angle_degrees: Number((dominantAngle * 180 / Math.PI).toFixed(2)),
-    cell_width_m: CELL_WIDTH_M,
-    cell_height_m: CELL_HEIGHT_M,
-    min_cell_area_sq_m: MIN_CELL_AREA_SQ_M,
-    fringe_tract_area_sq_m: FRINGE_TRACT_AREA_SQ_M,
-    feature_count: gridFeatures.length,
-    census_tract_source: TRACTS_PATH,
-    note: "Experimental road-aligned grid for neighborhood perception assignment; every selectable area is clipped to one census tract."
+    generated_from: BLOCKS_PATH,
+    method: "road-flow-block-splits",
+    max_unit_area_sq_m: MAX_UNIT_AREA_SQ_M,
+    target_unit_area_sq_m: TARGET_UNIT_AREA_SQ_M,
+    min_split_part_area_sq_m: MIN_SPLIT_PART_AREA_SQ_M,
+    max_parts_per_block: MAX_PARTS_PER_BLOCK,
+    feature_count: flowFeatures.length,
+    note: "Experimental road-flow survey layer generated from street/census-block-shaped Wilkinsburg units. Oversized units are split only inside their existing road-bounded footprint."
   },
-  features: gridFeatures
+  features: flowFeatures
 };
 
 fs.writeFileSync(GRID_PATH, JSON.stringify(grid));
 fs.writeFileSync(GRAPH_PATH, JSON.stringify(graph));
 fs.writeFileSync(EDGES_PATH, JSON.stringify(edges));
-fs.writeFileSync(OUTLINE_PATH, JSON.stringify(selectableBoundary(gridFeatures)));
+fs.writeFileSync(OUTLINE_PATH, JSON.stringify(selectableBoundary(flowFeatures)));
 fs.writeFileSync(SPEC_PATH, JSON.stringify({
   units: {
-    name: ["Areas"],
+    name: ["Road-flow areas"],
     id: ["fluid-grid"],
     idColumn: {
       key: ["GEOID"],
@@ -66,180 +56,191 @@ fs.writeFileSync(SPEC_PATH, JSON.stringify({
       type: ["fill"],
       source: {
         type: ["geojson"],
-        data: "./assets/wilkinsburg_fluid_grid.geojson?v=20260630-fluid-grid-1"
+        data: "./assets/wilkinsburg_fluid_grid.geojson?v=20260630-road-flow-1"
       },
       sourceLayer: [null]
     }
   }
 }));
 
-console.log(
-  `Generated ${GRID_PATH} with ${gridFeatures.length} road-aligned grid area${gridFeatures.length === 1 ? "" : "s"} at ${grid.properties.street_angle_degrees} degrees.`
-);
+console.log(`Generated ${GRID_PATH} with ${flowFeatures.length} road-flow areas from ${blocks.features.length} road-shaped source units.`);
 
-function generateGridCells() {
-  const box = rotatedBounds(boundaryMultiPolygon, dominantAngle);
-  const features = tractRecords
-    .filter(tract => tract.area <= FRINGE_TRACT_AREA_SQ_M)
-    .map(tract => tractFeature(tract));
-  const gridTracts = tractRecords.filter(tract => tract.area > FRINGE_TRACT_AREA_SQ_M);
-  let row = 0;
-
-  for (let v = box.minV - CELL_HEIGHT_M; v < box.maxV + CELL_HEIGHT_M; v += CELL_HEIGHT_M) {
-    let col = 0;
-
-    for (let u = box.minU - CELL_WIDTH_M; u < box.maxU + CELL_WIDTH_M; u += CELL_WIDTH_M) {
-      const ring = rectangleRing(u, v, u + CELL_WIDTH_M, v + CELL_HEIGHT_M, dominantAngle);
-
-      for (const tract of gridTracts) {
-        const clipped = pc.intersection([ring], tract.multiPolygon);
-        if (!clipped || clipped.length === 0) continue;
-
-        const area = multiPolygonAreaSqM(clipped);
-
-        if (area > 1) {
-          const tractId = String(tract.feature.properties.GEOID);
-
-          features.push({
-            type: "Feature",
-            properties: {
-              GEOID: `FG_${tractId}_${String(row).padStart(2, "0")}_${String(col).padStart(2, "0")}`,
-              census_tract_geoid: tractId,
-              census_tract_name: String(tract.feature.properties.NAME || ""),
-              grid_row: row,
-              grid_col: col,
-              area_sq_m: Math.round(area)
-            },
-            geometry: multiPolygonToGeometry(clipped)
-          });
-        }
-      }
-
-      col++;
-    }
-
-    row++;
-  }
-
-  return features;
-}
-
-function mergeSmallCells(features) {
-  const records = features.map(feature => makeRecord(feature));
-  const locked = new Set();
-
-  while (true) {
-    const small = records
-      .filter(record => record.area < MIN_CELL_AREA_SQ_M && !locked.has(record.id))
-      .sort((a, b) => a.area - b.area)[0];
-
-    if (!small) break;
-
-    const target = bestMergeTarget(small, records);
-    if (!target) {
-      locked.add(small.id);
-      continue;
-    }
-
-    target.feature.geometry = multiPolygonToGeometry(pc.union(
-      geometryToMultiPolygon(target.feature.geometry),
-      geometryToMultiPolygon(small.feature.geometry)
-    ));
-    target.feature.properties.merged_grid_geoids = [
-      ...(target.feature.properties.merged_grid_geoids || []),
-      small.id
-    ];
-    target.area = geometryAreaSqM(target.feature.geometry);
-    target.segments = geometrySegments(target.feature.geometry);
-
-    records.splice(records.indexOf(small), 1);
-  }
-
-  return records
-    .sort((a, b) => a.id.localeCompare(b.id))
-    .map((record, index) => ({
-      ...record.feature,
+function buildRoadFlowFeatures() {
+  return blocks.features.flatMap(feature => splitFeature(feature))
+    .map((feature, index) => ({
+      ...feature,
       properties: {
-        ...record.feature.properties,
-        GEOID: `FG${String(index + 1).padStart(4, "0")}`,
-        area_sq_m: Math.round(geometryAreaSqM(record.feature.geometry))
+        ...feature.properties,
+        GEOID: `RF${String(index + 1).padStart(4, "0")}`,
+        road_flow_id: `RF${String(index + 1).padStart(4, "0")}`,
+        area_sq_m: Math.round(geometryAreaSqM(feature.geometry))
       }
     }));
 }
 
-function tractFeature(tract) {
-  const tractId = String(tract.feature.properties.GEOID);
+function splitFeature(feature) {
+  const record = makeRecord(feature);
+  const targetCount = Math.min(
+    MAX_PARTS_PER_BLOCK,
+    Math.max(1, Math.ceil(record.area / TARGET_UNIT_AREA_SQ_M))
+  );
+
+  if (record.area <= MAX_UNIT_AREA_SQ_M || targetCount <= 1) {
+    return [featureWithRoadFlowProperties(feature, record, 1, 1)];
+  }
+
+  let parts = [record];
+
+  while (parts.length < targetCount) {
+    const candidate = parts
+      .map((part, index) => ({ part, index }))
+      .filter(item => item.part.area > MAX_UNIT_AREA_SQ_M || parts.length < targetCount)
+      .sort((a, b) => b.part.area - a.part.area)[0];
+
+    if (!candidate) break;
+
+    const split = splitRoadFlowPart(candidate.part);
+    if (!split) break;
+
+    parts.splice(candidate.index, 1, ...split);
+  }
+
+  return parts.map((part, index) => featureWithRoadFlowProperties(
+    feature,
+    part,
+    index + 1,
+    parts.length
+  ));
+}
+
+function featureWithRoadFlowProperties(sourceFeature, record, part, count) {
+  const originalId = String(sourceFeature.properties.original_geoid || sourceFeature.properties.GEOID);
 
   return {
     type: "Feature",
     properties: {
-      GEOID: `FG_TRACT_${tractId}`,
-      census_tract_geoid: tractId,
-      census_tract_name: String(tract.feature.properties.NAME || ""),
-      grid_row: null,
-      grid_col: null,
-      fringe_tract_piece: true,
-      area_sq_m: Math.round(tract.area)
+      ...sourceFeature.properties,
+      original_geoid: originalId,
+      source_geoid: String(sourceFeature.properties.GEOID),
+      census_tract_geoid: originalId.slice(0, 11),
+      road_flow_part: part,
+      road_flow_part_count: count
     },
-    geometry: tract.feature.geometry
+    geometry: multiPolygonToGeometry(record.multiPolygon)
   };
 }
 
-function bestMergeTarget(small, records) {
-  const candidates = records
-    .filter(record => record !== small && record.tractId === small.tractId)
-    .map(record => ({
-      record,
-      shared: sharedBoundaryLength(small, record),
-      distance: geometryDistance(small, record)
-    }))
-    .sort((a, b) => {
-      if (Math.abs(b.shared - a.shared) > 0.001) return b.shared - a.shared;
-      if (Math.abs(a.distance - b.distance) > 0.001) return a.distance - b.distance;
-      return a.record.area - b.record.area;
-    });
+function splitRoadFlowPart(record) {
+  const angle = dominantEdgeAngle(record.multiPolygon);
+  const box = rotatedBounds(record.multiPolygon, angle);
+  const splitAlongU = box.width >= box.height;
+  const attempts = [0.5, 0.44, 0.56, 0.38, 0.62]
+    .flatMap(fraction => [
+      { angle, splitAlongU, fraction },
+      { angle, splitAlongU: !splitAlongU, fraction }
+    ]);
 
-  return candidates[0]?.record || null;
+  for (const attempt of attempts) {
+    const split = splitByRotatedFraction(record, attempt.angle, attempt.splitAlongU, attempt.fraction);
+    if (split) return split;
+  }
+
+  return null;
 }
 
-function dominantStreetAngle(collection) {
+function splitByRotatedFraction(record, angle, splitAlongU, fraction) {
+  const box = rotatedBounds(record.multiPolygon, angle);
+  const padding = 20;
+  const cut = splitAlongU
+    ? box.minU + box.width * fraction
+    : box.minV + box.height * fraction;
+
+  const firstClip = splitAlongU
+    ? rotatedRectangleRing(box.minU - padding, box.minV - padding, cut, box.maxV + padding, angle)
+    : rotatedRectangleRing(box.minU - padding, box.minV - padding, box.maxU + padding, cut, angle);
+  const secondClip = splitAlongU
+    ? rotatedRectangleRing(cut, box.minV - padding, box.maxU + padding, box.maxV + padding, angle)
+    : rotatedRectangleRing(box.minU - padding, cut, box.maxU + padding, box.maxV + padding, angle);
+
+  const first = pc.intersection(record.multiPolygon, [firstClip]);
+  const second = pc.intersection(record.multiPolygon, [secondClip]);
+
+  if (!first || !second || first.length === 0 || second.length === 0) return null;
+
+  const firstRecord = makeRecord({ type: "Feature", properties: { GEOID: `${record.id}__a` }, geometry: multiPolygonToGeometry(first) });
+  const secondRecord = makeRecord({ type: "Feature", properties: { GEOID: `${record.id}__b` }, geometry: multiPolygonToGeometry(second) });
+
+  if (firstRecord.area < MIN_SPLIT_PART_AREA_SQ_M || secondRecord.area < MIN_SPLIT_PART_AREA_SQ_M) return null;
+
+  return [firstRecord, secondRecord];
+}
+
+function dominantEdgeAngle(multiPolygon) {
   const bins = new Map();
   const binSize = Math.PI / 36;
 
-  for (const feature of collection.features) {
-    for (const segment of geometrySegments(feature.geometry)) {
-      const [[x1, y1], [x2, y2]] = segment;
-      const length = Math.hypot(x2 - x1, y2 - y1);
-      if (length < 25) continue;
+  for (const segment of multiPolygonSegments(multiPolygon)) {
+    const [[x1, y1], [x2, y2]] = segment;
+    const length = Math.hypot(x2 - x1, y2 - y1);
+    if (length < 12) continue;
 
-      let angle = Math.atan2(y2 - y1, x2 - x1);
-      while (angle < 0) angle += Math.PI;
-      while (angle >= Math.PI / 2) angle -= Math.PI / 2;
+    let angle = Math.atan2(y2 - y1, x2 - x1);
+    while (angle < 0) angle += Math.PI;
+    while (angle >= Math.PI) angle -= Math.PI;
 
-      const bin = Math.round(angle / binSize) * binSize;
-      bins.set(bin, (bins.get(bin) || 0) + length);
-    }
+    const bin = Math.round(angle / binSize) * binSize;
+    bins.set(bin, (bins.get(bin) || 0) + length);
   }
 
   const best = Array.from(bins.entries()).sort((a, b) => b[1] - a[1])[0];
   return best ? best[0] : 0;
 }
 
+function rotatedBounds(multiPolygon, angle) {
+  let minU = Infinity;
+  let minV = Infinity;
+  let maxU = -Infinity;
+  let maxV = -Infinity;
+
+  visitPositions(multiPolygon, position => {
+    const [u, v] = rotate(project(position), angle);
+    minU = Math.min(minU, u);
+    minV = Math.min(minV, v);
+    maxU = Math.max(maxU, u);
+    maxV = Math.max(maxV, v);
+  });
+
+  return { minU, minV, maxU, maxV, width: maxU - minU, height: maxV - minV };
+}
+
+function rotatedRectangleRing(minU, minV, maxU, maxV, angle) {
+  return [
+    unproject(unrotate([minU, minV], angle)),
+    unproject(unrotate([maxU, minV], angle)),
+    unproject(unrotate([maxU, maxV], angle)),
+    unproject(unrotate([minU, maxV], angle)),
+    unproject(unrotate([minU, minV], angle))
+  ];
+}
+
 function buildGraph(features) {
   const graph = {};
-  const segments = sharedSegmentMap(features);
+  const records = features.map(feature => ({
+    id: String(feature.properties.GEOID),
+    segments: multiPolygonSegments(geometryToMultiPolygon(feature.geometry))
+  }));
 
   for (const feature of features) {
     graph[String(feature.properties.GEOID)] = [];
   }
 
-  for (const segment of segments.values()) {
-    const ids = Array.from(segment.ids);
-    if (ids.length !== 2) continue;
+  for (let i = 0; i < records.length; i++) {
+    for (let j = i + 1; j < records.length; j++) {
+      if (sharedBoundaryLength(records[i], records[j]) <= 0.5) continue;
 
-    const [a, b] = ids;
-    graph[a].push(b);
-    graph[b].push(a);
+      graph[records[i].id].push(records[j].id);
+      graph[records[j].id].push(records[i].id);
+    }
   }
 
   for (const id of Object.keys(graph)) {
@@ -331,21 +332,18 @@ function selectableBoundary(features) {
 }
 
 function makeRecord(feature) {
+  const multiPolygon = geometryToMultiPolygon(feature.geometry);
+
   return {
     id: String(feature.properties.GEOID),
-    tractId: String(feature.properties.census_tract_geoid),
     feature,
-    area: geometryAreaSqM(feature.geometry),
-    segments: geometrySegments(feature.geometry)
+    multiPolygon,
+    area: multiPolygonAreaSqM(multiPolygon)
   };
 }
 
 function readJson(path) {
   return JSON.parse(fs.readFileSync(path, "utf8"));
-}
-
-function collectionToMultiPolygon(collection) {
-  return collection.features.flatMap(feature => geometryToMultiPolygon(feature.geometry));
 }
 
 function geometryToMultiPolygon(geometry) {
@@ -358,33 +356,6 @@ function multiPolygonToGeometry(multiPolygon) {
   return multiPolygon.length === 1
     ? { type: "Polygon", coordinates: multiPolygon[0] }
     : { type: "MultiPolygon", coordinates: multiPolygon };
-}
-
-function rectangleRing(minU, minV, maxU, maxV, angle) {
-  return [
-    unproject(unrotate([minU, minV], angle)),
-    unproject(unrotate([maxU, minV], angle)),
-    unproject(unrotate([maxU, maxV], angle)),
-    unproject(unrotate([minU, maxV], angle)),
-    unproject(unrotate([minU, minV], angle))
-  ];
-}
-
-function rotatedBounds(multiPolygon, angle) {
-  let minU = Infinity;
-  let minV = Infinity;
-  let maxU = -Infinity;
-  let maxV = -Infinity;
-
-  visitPositions(multiPolygon, position => {
-    const [u, v] = rotate(project(position), angle);
-    minU = Math.min(minU, u);
-    minV = Math.min(minV, v);
-    maxU = Math.max(maxU, u);
-    maxV = Math.max(maxV, v);
-  });
-
-  return { minU, minV, maxU, maxV };
 }
 
 function rotate([x, y], angle) {
@@ -474,10 +445,10 @@ function ringAreaSqM(ring) {
   return area / 2;
 }
 
-function geometrySegments(geometry) {
+function multiPolygonSegments(multiPolygon) {
   const segments = [];
 
-  for (const polygon of geometryToMultiPolygon(geometry)) {
+  for (const polygon of multiPolygon) {
     for (const ring of polygon) {
       for (let i = 0; i < ring.length - 1; i++) {
         segments.push([project(ring[i]), project(ring[i + 1])]);
@@ -535,63 +506,6 @@ function projectionT(start, end, point) {
 
 function cross(a, b, c) {
   return (b[0] - a[0]) * (c[1] - a[1]) - (b[1] - a[1]) * (c[0] - a[0]);
-}
-
-function geometryDistance(a, b) {
-  let distance = Infinity;
-
-  for (const segmentA of a.segments) {
-    for (const segmentB of b.segments) {
-      distance = Math.min(distance, segmentDistance(segmentA, segmentB));
-      if (distance === 0) return 0;
-    }
-  }
-
-  return distance;
-}
-
-function segmentDistance([a1, a2], [b1, b2]) {
-  if (segmentsIntersect(a1, a2, b1, b2)) return 0;
-
-  return Math.min(
-    pointSegmentDistance(a1, b1, b2),
-    pointSegmentDistance(a2, b1, b2),
-    pointSegmentDistance(b1, a1, a2),
-    pointSegmentDistance(b2, a1, a2)
-  );
-}
-
-function segmentsIntersect(a, b, c, d) {
-  const o1 = orientation(a, b, c);
-  const o2 = orientation(a, b, d);
-  const o3 = orientation(c, d, a);
-  const o4 = orientation(c, d, b);
-
-  return o1 * o2 <= 0 && o3 * o4 <= 0;
-}
-
-function orientation(a, b, c) {
-  const value = cross(a, b, c);
-  if (Math.abs(value) < 1e-9) return 0;
-  return value > 0 ? 1 : -1;
-}
-
-function pointSegmentDistance(point, start, end) {
-  const dx = end[0] - start[0];
-  const dy = end[1] - start[1];
-  const lengthSq = dx * dx + dy * dy;
-
-  if (lengthSq === 0) {
-    return Math.hypot(point[0] - start[0], point[1] - start[1]);
-  }
-
-  const t = Math.max(
-    0,
-    Math.min(1, ((point[0] - start[0]) * dx + (point[1] - start[1]) * dy) / lengthSq)
-  );
-  const projected = [start[0] + t * dx, start[1] + t * dy];
-
-  return Math.hypot(point[0] - projected[0], point[1] - projected[1]);
 }
 
 function segmentKey(start, end) {
