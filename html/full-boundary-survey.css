@@ -81,6 +81,7 @@ section:last-child {
   flex: 1;
   min-width: 0;
   min-height: 0;
+  container-type: inline-size;
   background: #e8edf3;
 }
 
@@ -776,6 +777,17 @@ button:disabled {
 
   #border-toggle-row {
     bottom: 4rem;
+  }
+}
+@container (max-width: 68rem) {
+  #map-search-toggle {
+    top: 4.25rem;
+    max-width: 13rem;
+    white-space: normal;
+  }
+
+  #map-search {
+    top: 6.7rem;
   }
 }
 @media (max-width: 860px) {
